@@ -1,17 +1,18 @@
 import { useState } from "react";
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View,} from "react-native";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import CustomButton from "../components/CustomButton";
 import CustomInput from "../components/CustomInput";
+import { RootStackParamList } from "../navigation/StackNavigator";
 
-export default function RegisterScreen() {
+// Tipado de las propiedades de navegación de la pantalla de registro.
+type Props = NativeStackScreenProps<
+  RootStackParamList,
+  "RegisterScreen"
+>;
+
+// Pantalla de registro de TaxiControl.
+export default function RegisterScreen({ navigation }: Props) {
   // Estado que almacena el nombre ingresado por el usuario.
   const [name, setName] = useState("");
 
@@ -77,10 +78,28 @@ export default function RegisterScreen() {
     // Muestra un mensaje cuando todos los datos son válidos.
     Alert.alert(
       "Registro exitoso",
-      "Los datos fueron validados correctamente."
+      "Los datos fueron validados correctamente.",
+      [
+        {
+          text: "OK",
+          onPress: () => {
+            // Limpia todos los campos del formulario.
+            setName("");
+            setEmail("");
+            setPassword("");
+            setPhone("");
+
+            // Reinicia el estado de validación.
+            setSubmitted(false);
+
+            // Regresa a la pantalla de Login.
+            navigation.navigate("LoginScreen");
+          },
+        },
+      ]
     );
 
-    // También mostramos los datos en la consola.
+    // Mostramos los datos en la consola para fines de demostración.
     console.log("Datos de registro:", {
       name,
       email,
@@ -158,12 +177,13 @@ export default function RegisterScreen() {
 
 // Estilos utilizados en la pantalla de registro.
 const styles = StyleSheet.create({
-  // Contenedor principal que se adapta a la aparición del teclado.
+  // Contenedor que se adapta a la aparición del teclado.
   keyboardContainer: {
     flex: 1,
+    backgroundColor: "#FFFFFF",
   },
 
-  // Permite que el contenido pueda desplazarse verticalmente.
+  // Permite desplazar verticalmente el contenido.
   scrollContainer: {
     flexGrow: 1,
     justifyContent: "center",

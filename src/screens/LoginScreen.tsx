@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View,} from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import CustomButton from "../components/CustomButton";
 import CustomInput from "../components/CustomInput";
@@ -33,70 +33,100 @@ export default function LoginScreen({ navigation }: Props) {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Título principal de la aplicación. */}
-      <Text style={styles.title}>TaxiControl</Text>
+    // Ajusta la pantalla cuando aparece el teclado.
+    <KeyboardAvoidingView
+      style={styles.keyboardContainer}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      {/* Permite desplazar el contenido cuando el teclado ocupa espacio. */}
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.container}>
+          {/* Logo local de TaxiControl. */}
+          <Image
+            source={require("../../assets/taxicontrol-logo.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
 
-      {/* Texto descriptivo de la pantalla. */}
-      <Text style={styles.subtitle}>
-        Inicia sesión para continuar
-      </Text>
+          {/* Texto descriptivo de la pantalla. */}
+          <Text style={styles.subtitle}>
+            Inicia sesión para continuar
+          </Text>
 
-      {/* Campo reutilizable para ingresar el correo electrónico. */}
-      <CustomInput
-        type="email"
-        placeholder="Correo electrónico"
-        value={email}
-        onChangeText={setEmail}
-      />
+          {/* Campo reutilizable para ingresar el correo electrónico. */}
+          <CustomInput
+            type="email"
+            placeholder="Correo electrónico"
+            value={email}
+            onChangeText={setEmail}
+          />
 
-      {/* Campo reutilizable para ingresar la contraseña. */}
-      <CustomInput
-        type="password"
-        placeholder="Contraseña"
-        value={password}
-        onChangeText={setPassword}
-      />
+          {/* Campo reutilizable para ingresar la contraseña. */}
+          <CustomInput
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChangeText={setPassword}
+          />
 
-      {/* Botón que permite iniciar sesión. */}
-      <CustomButton
-        title="Iniciar sesión"
-        onPress={handleLogin}
-      />
+          {/* Botón que permite iniciar sesión. */}
+          <CustomButton
+            title="Iniciar sesión"
+            onPress={handleLogin}
+          />
 
-      {/* Texto que indica que el usuario puede crear una cuenta. */}
-      <Text style={styles.registerText}>
-        ¿No tienes una cuenta?
-      </Text>
+          {/* Texto que indica que el usuario puede crear una cuenta. */}
+          <Text style={styles.registerText}>
+            ¿No tienes una cuenta?
+          </Text>
 
-      {/* Botón que permite acceder al formulario de registro. */}
-      <CustomButton
-        title="Crear cuenta"
-        variant="secondary"
-        onPress={() => navigation.navigate("RegisterScreen")}
-      />
-    </View>
+          {/* Botón que permite acceder al formulario de registro. */}
+          <CustomButton
+            title="Crear cuenta"
+            variant="secondary"
+            onPress={() => navigation.navigate("RegisterScreen")}
+          />
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 // Estilos de la pantalla de inicio de sesión.
 const styles = StyleSheet.create({
-  container: {
+  // Contenedor que se adapta a la aparición del teclado.
+  keyboardContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
+    backgroundColor: "#FFFFFF",
   },
 
-  title: {
-    fontSize: 30,
-    fontWeight: "bold",
+  // Permite desplazar verticalmente el contenido.
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+  },
+
+  // Contenedor visual de la pantalla.
+  container: {
+    alignItems: "center",
+    padding: 24,
+    backgroundColor: "#FFFFFF",
+  },
+
+  // Tamaño y separación del logo.
+  logo: {
+    width: 260,
+    height: 260,
     marginBottom: 10,
   },
 
   subtitle: {
     fontSize: 16,
     marginBottom: 25,
+    textAlign: "center",
   },
 
   registerText: {
