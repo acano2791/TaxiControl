@@ -4,6 +4,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import CustomButton from "../components/CustomButton";
 import CustomInput from "../components/CustomInput";
 import { RootStackParamList } from "../navigation/StackNavigator";
+import { useAuth } from "../contexts/AuthContext";
 
 // Tipado de las propiedades de navegación de la pantalla Login.
 type Props = NativeStackScreenProps<
@@ -19,10 +20,15 @@ export default function LoginScreen({ navigation }: Props) {
   // Estado que almacena la contraseña ingresada por el usuario.
   const [password, setPassword] = useState("");
 
+  // Obtiene la función login del contexto de autenticación.
+  const { login } = useAuth();
+
   // Función que se ejecuta al presionar el botón de iniciar sesión.
   const handleLogin = () => {
-    // Por ahora solamente navegamos hacia las pestañas del usuario.
-    // La autenticación real la implementaremos posteriormente.
+    // Por ahora registramos al usuario como usuario.
+    login(email, "usuario");
+
+    // Navegamos hacia las pestañas principales.
     navigation.navigate("UserTabs");
   };
 
