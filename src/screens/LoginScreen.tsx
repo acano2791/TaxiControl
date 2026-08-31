@@ -1,21 +1,28 @@
+import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import CustomButton from "../components/CustomButton";
+import CustomInput from "../components/CustomInput";
 import { RootStackParamList } from "../navigation/StackNavigator";
 
-// Tipo utilizado para definir las rutas disponibles dentro del Stack.
-type LoginScreenNavigationProp = NativeStackNavigationProp<
+// Tipado de las propiedades de navegación de la pantalla Login.
+type Props = NativeStackScreenProps<
   RootStackParamList,
   "LoginScreen"
 >;
 
-type Props = {
-  navigation: LoginScreenNavigationProp;
-};
-
+// Pantalla de inicio de sesión de TaxiControl.
 export default function LoginScreen({ navigation }: Props) {
-  // Navega hacia las pestañas principales de TaxiControl.
+  // Estado que almacena el correo ingresado por el usuario.
+  const [email, setEmail] = useState("");
+
+  // Estado que almacena la contraseña ingresada por el usuario.
+  const [password, setPassword] = useState("");
+
+  // Función que se ejecuta al presionar el botón de iniciar sesión.
   const handleLogin = () => {
+    // Por ahora solamente navegamos hacia las pestañas del usuario.
+    // La autenticación real la implementaremos posteriormente.
     navigation.navigate("UserTabs");
   };
 
@@ -24,12 +31,28 @@ export default function LoginScreen({ navigation }: Props) {
       {/* Título principal de la aplicación. */}
       <Text style={styles.title}>TaxiControl</Text>
 
-      {/* Texto que indica la función de esta pantalla. */}
+      {/* Texto descriptivo de la pantalla. */}
       <Text style={styles.subtitle}>
         Inicia sesión para continuar
       </Text>
 
-      {/* Botón utilizado para probar la navegación hacia UserTabs. */}
+      {/* Campo reutilizable para ingresar el correo electrónico. */}
+      <CustomInput
+        type="email"
+        placeholder="Correo electrónico"
+        value={email}
+        onChangeText={setEmail}
+      />
+
+      {/* Campo reutilizable para ingresar la contraseña. */}
+      <CustomInput
+        type="password"
+        placeholder="Contraseña"
+        value={password}
+        onChangeText={setPassword}
+      />
+
+      {/* Botón que permite iniciar sesión. */}
       <CustomButton
         title="Iniciar sesión"
         onPress={handleLogin}
@@ -46,13 +69,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 24,
   },
+
   title: {
     fontSize: 30,
     fontWeight: "bold",
     marginBottom: 10,
   },
+
   subtitle: {
     fontSize: 16,
-    marginBottom: 20,
+    marginBottom: 25,
   },
 });
