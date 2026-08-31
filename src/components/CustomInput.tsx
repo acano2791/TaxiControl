@@ -14,7 +14,8 @@ type CustomInputProps = {
   placeholder: string;
   value: string;
   onChangeText: (text: string) => void;
-  type?: "default" | "password" | "number" | "email";
+  type?: "default" | "password" | "number" | "email" | "phone";
+  showRequiredError?: boolean;
 };
 
 // Componente reutilizable para los campos de texto de TaxiControl.
@@ -23,6 +24,7 @@ export default function CustomInput({
   value,
   onChangeText,
   type = "default",
+  showRequiredError = false,
 }: CustomInputProps) {
   // Estado local que controla si la contraseña se muestra u oculta.
   const [isSecureText, setIsSecureText] = useState(type === "password");
@@ -36,23 +38,48 @@ export default function CustomInput({
       ? "email-address"
       : type === "number"
         ? "number-pad"
-        : "default";
+        : type === "phone"
+          ? "phone-pad"
+          : "default";
+
+  // Función que controla los cambios realizados en el campo.
+  const handleChangeText = (text: string) => {
+    // En los campos de teléfono solamente se permiten números.
+    if (type === "phone") {
+      const onlyNumbers = text.replace(/\D/g, "");
+      onChangeText(onlyNumbers);
+      return;
+    }
+
+    // Para los demás tipos se conserva el texto ingresado.
+    onChangeText(text);
+  };
 
   // Función que realiza las validaciones básicas del campo.
   const getError = () => {
+    // Valida que un campo obligatorio no quede vacío.
+    if (value.trim() === "") {
+      return "Este campo es obligatorio";
+    }
+
     // Valida que el correo contenga el símbolo @.
-    if (type === "email" && value !== "" && !value.includes("@")) {
+    if (type === "email" && !value.includes("@")) {
       return "Correo inválido";
     }
 
     // Valida que la contraseña tenga al menos 4 caracteres.
-    if (type === "password" && value !== "" && value.length < 4) {
+    if (type === "password" && value.length < 4) {
       return "La contraseña es débil";
     }
 
     // Valida que un campo numérico tenga al menos dos caracteres.
-    if (type === "number" && value !== "" && value.length < 2) {
+    if (type === "number" && value.length < 2) {
       return "Número inválido";
+    }
+
+    // Valida que el teléfono tenga exactamente 8 dígitos.
+    if (type === "phone" && value.length !== 8) {
+      return "Teléfono inválido";
     }
 
     // Si no existe ningún error, no se muestra mensaje.
@@ -62,17 +89,27 @@ export default function CustomInput({
   // Guarda el mensaje de error correspondiente al campo.
   const error = getError();
 
+  // Determina cuándo se debe mostrar el mensaje de error.
+  const shouldShowError =
+    error !== "" && (value !== "" || showRequiredError);
+
   return (
     <View style={styles.wrapper}>
       {/* Contenedor visual del campo de entrada. */}
-      <View style={styles.inputContainer}>
+      <View
+        style={[
+          styles.inputContainer,
+          shouldShowError ? styles.errorBorder : null,
+        ]}
+      >
         <TextInput
           style={styles.input}
           placeholder={placeholder}
           value={value}
-          onChangeText={onChangeText}
+          onChangeText={handleChangeText}
           keyboardType={keyboardType}
           secureTextEntry={isSecureText}
+          maxLength={type === "phone" ? 8 : undefined}
         />
 
         {/* El botón del ojo solamente aparece en campos de contraseña. */}
@@ -88,8 +125,10 @@ export default function CustomInput({
         )}
       </View>
 
-      {/* Muestra el mensaje de error cuando existe. */}
-      {error !== "" && <Text style={styles.error}>{error}</Text>}
+      {/* Muestra el mensaje de error cuando corresponde. */}
+      {shouldShowError && (
+        <Text style={styles.error}>{error}</Text>
+      )}
     </View>
   );
 }
@@ -121,6 +160,10 @@ const styles = StyleSheet.create({
     color: "#1A2B3D",
     fontSize: 15,
     paddingVertical: 10,
+  },
+
+  errorBorder: {
+    borderColor: "#D32F2F",
   },
 
   error: {

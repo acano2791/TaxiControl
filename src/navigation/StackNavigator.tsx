@@ -2,12 +2,14 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import LoginScreen from "../screens/LoginScreen";
 import HomeScreen from "../screens/HomeScreen";
 import TabsNavigator from "./TabsNavigator";
+import RegisterScreen from "../screens/RegisterScreen";
 
 // Tipado de las pantallas que pertenecen al Stack Navigator.
 export type RootStackParamList = {
   LoginScreen: undefined;
   HomeScreen: undefined;
   UserTabs: undefined;
+  RegisterScreen: undefined;
 };
 
 // Creación del Stack Navigator utilizando el tipado anterior.
@@ -37,6 +39,13 @@ export default function StackNavigator() {
       name="UserTabs"
       component={TabsNavigator}
       options={{ headerShown: false }}
+      />
+
+      {/* Pantalla para crear una nueva cuenta. */}
+      <Stack.Screen
+      name="RegisterScreen"
+      component={RegisterScreen}
+      options={{ title: "Crear cuenta" }}
       />
 
     </Stack.Navigator>

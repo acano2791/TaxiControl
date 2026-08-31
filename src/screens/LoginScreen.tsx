@@ -63,6 +63,18 @@ export default function LoginScreen({ navigation }: Props) {
         title="Iniciar sesión"
         onPress={handleLogin}
       />
+
+      {/* Texto que indica que el usuario puede crear una cuenta. */}
+      <Text style={styles.registerText}>
+        ¿No tienes una cuenta?
+      </Text>
+
+      {/* Botón que permite acceder al formulario de registro. */}
+      <CustomButton
+        title="Crear cuenta"
+        variant="secondary"
+        onPress={() => navigation.navigate("RegisterScreen")}
+      />
     </View>
   );
 }
@@ -85,5 +97,11 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     marginBottom: 25,
+  },
+
+  registerText: {
+    fontSize: 14,
+    marginTop: 20,
+    marginBottom: 10,
   },
 });
