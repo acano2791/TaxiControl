@@ -1,11 +1,13 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import LoginScreen from "../screens/LoginScreen";
 import HomeScreen from "../screens/HomeScreen";
+import TabsNavigator from "./TabsNavigator";
 
 // Tipado de las pantallas que pertenecen al Stack Navigator.
 export type RootStackParamList = {
   LoginScreen: undefined;
   HomeScreen: undefined;
+  UserTabs: undefined;
 };
 
 // Creación del Stack Navigator utilizando el tipado anterior.
@@ -28,6 +30,13 @@ export default function StackNavigator() {
         name="HomeScreen"
         component={HomeScreen}
         options={{ title: "TaxiControl" }}
+      />
+
+      {/* Navegación por pestañas para el usuario. */}
+      <Stack.Screen
+      name="UserTabs"
+      component={TabsNavigator}
+      options={{ headerShown: false }}
       />
 
     </Stack.Navigator>
