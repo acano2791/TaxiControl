@@ -3,6 +3,7 @@ import HomeScreen from "../screens/HomeScreen";
 import RequestTaxiScreen from "../screens/RequestTaxiScreen";
 import HistoryScreen from "../screens/HistoryScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import { useTheme } from "../contexts/ThemeContext";
 
 // Tipado de las pantallas que pertenecen a las pestañas.
 export type TabsParamList = {
@@ -17,9 +18,24 @@ const Tab = createBottomTabNavigator<TabsParamList>();
 
 // Componente encargado de controlar las pestañas principales del usuario.
 export default function TabsNavigator() {
-  return (
-    <Tab.Navigator>
+  // Obtiene los colores del tema actual.
+  const { colors } = useTheme();
 
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        tabBarStyle: {
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+        },
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
+        headerStyle: {
+          backgroundColor: colors.background,
+        },
+        headerTintColor: colors.text,
+      }}
+    >
       {/* Pestaña principal de TaxiControl. */}
       <Tab.Screen
         name="HomeTab"
@@ -47,7 +63,6 @@ export default function TabsNavigator() {
         component={ProfileScreen}
         options={{ title: "Perfil" }}
       />
-
     </Tab.Navigator>
   );
 }

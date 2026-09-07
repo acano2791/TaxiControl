@@ -2,10 +2,14 @@ import { StyleSheet, Text, View } from "react-native";
 import { useAuth } from "../contexts/AuthContext";
 import CustomButton from "../components/CustomButton";
 import { navigationRef } from "../navigation/NavigationService";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function ProfileScreen() {
   // Obtiene la información y las funciones de autenticación del contexto.
   const { user, logout } = useAuth();
+
+  // Obtiene la información y funciones del tema.
+  const { colors, isDark, toggleTheme } = useTheme();
 
   // Función encargada de cerrar la sesión y regresar al Login.
   const handleLogout = () => {
@@ -23,23 +27,44 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.background },
+      ]}
+    >
       {/* Título de la pantalla de perfil. */}
-      <Text style={styles.title}>Mi perfil</Text>
+      <Text style={[styles.title, { color: colors.text }]}>
+        Mi perfil
+      </Text>
 
       {/* Muestra el correo almacenado en el contexto. */}
-      <Text style={styles.label}>Correo electrónico:</Text>
-      <Text style={styles.value}>
+      <Text style={[styles.label, { color: colors.text }]}>
+        Correo electrónico:
+      </Text>
+
+      <Text style={[styles.value, { color: colors.textSecondary }]}>
         {user?.email}
       </Text>
 
       {/* Muestra el rol almacenado en el contexto. */}
-      <Text style={styles.label}>Tipo de cuenta:</Text>
-      <Text style={styles.value}>
+      <Text style={[styles.label, { color: colors.text }]}>
+        Tipo de cuenta:
+      </Text>
+
+      <Text style={[styles.value, { color: colors.textSecondary }]}>
         {user?.role}
       </Text>
 
-      {/* Botón que permite cerrar la sesión. */}
+      {/* Botón para cambiar entre tema claro y oscuro. */}
+      <View style={styles.buttonContainer}>
+        <CustomButton
+          title={isDark ? "☀️ Tema claro" : "🌙 Tema oscuro"}
+          onPress={toggleTheme}
+        />
+      </View>
+
+      {/* Botón que permite cerrar sesión. */}
       <View style={styles.buttonContainer}>
         <CustomButton
           title="Cerrar sesión"
