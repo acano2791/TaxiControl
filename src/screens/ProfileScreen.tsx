@@ -1,24 +1,25 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, Switch } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 import CustomButton from "../components/CustomButton";
 import { navigationRef } from "../navigation/NavigationService";
-import { useTheme } from "../contexts/ThemeContext";
 
 export default function ProfileScreen() {
-  // Obtiene la información y las funciones de autenticación del contexto.
+  // Obtiene la información y las funciones de autenticación.
   const { user, logout } = useAuth();
 
   // Obtiene la información y funciones del tema.
-  const { colors, isDark, toggleTheme } = useTheme();
+  const { isDark, colors, toggleTheme } = useTheme();
 
   // Función encargada de cerrar la sesión y regresar al Login.
   const handleLogout = () => {
-    // Limpia la información del usuario almacenada en el contexto.
+    // Limpia la información del usuario.
     logout();
 
     // Verifica que el contenedor de navegación esté disponible.
     if (navigationRef.isReady()) {
-      // Reinicia el historial de navegación y coloca LoginScreen como primera pantalla.
+      // Reinicia la navegación y coloca LoginScreen como primera pantalla.
       navigationRef.reset({
         index: 0,
         routes: [{ name: "LoginScreen" }],
@@ -33,12 +34,12 @@ export default function ProfileScreen() {
         { backgroundColor: colors.background },
       ]}
     >
-      {/* Título de la pantalla de perfil. */}
+      {/* Título de la pantalla. */}
       <Text style={[styles.title, { color: colors.text }]}>
         Mi perfil
       </Text>
 
-      {/* Muestra el correo almacenado en el contexto. */}
+      {/* Información del usuario. */}
       <Text style={[styles.label, { color: colors.text }]}>
         Correo electrónico:
       </Text>
@@ -47,7 +48,6 @@ export default function ProfileScreen() {
         {user?.email}
       </Text>
 
-      {/* Muestra el rol almacenado en el contexto. */}
       <Text style={[styles.label, { color: colors.text }]}>
         Tipo de cuenta:
       </Text>
@@ -56,15 +56,43 @@ export default function ProfileScreen() {
         {user?.role}
       </Text>
 
-      {/* Botón para cambiar entre tema claro y oscuro. */}
-      <View style={styles.buttonContainer}>
-        <CustomButton
-          title={isDark ? "☀️ Tema claro" : "🌙 Tema oscuro"}
-          onPress={toggleTheme}
+      {/* Icono representativo del tema actual. */}
+      <Ionicons
+        name={isDark ? "moon" : "sunny"}
+        size={50}
+        color={colors.primary}
+        style={styles.icon}
+      />
+
+      {/* Información del tema. */}
+      <Text style={[styles.themeTitle, { color: colors.text }]}>
+        Tema actual: {isDark ? "Oscuro" : "Claro"}
+      </Text>
+
+      <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+        Cambia el tema de la aplicación.
+      </Text>
+
+      {/* Switch para alternar entre tema claro y oscuro. */}
+      <View style={styles.row}>
+        <Text style={[styles.themeLabel, { color: colors.text }]}>
+          {isDark
+            ? "Desactivar modo oscuro"
+            : "Activar modo oscuro"}
+        </Text>
+
+        <Switch
+          value={isDark}
+          onValueChange={toggleTheme}
+          thumbColor={isDark ? colors.primary : "#f4f3f4"}
+          trackColor={{
+            false: "#ccc",
+            true: colors.primary,
+          }}
         />
       </View>
 
-      {/* Botón que permite cerrar sesión. */}
+      {/* Botón para cerrar sesión. */}
       <View style={styles.buttonContainer}>
         <CustomButton
           title="Cerrar sesión"
@@ -80,15 +108,20 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
     padding: 24,
+  },
+
+  icon: {
+    marginTop: 30,
+    marginBottom: 8,
   },
 
   title: {
     fontSize: 26,
     fontWeight: "bold",
-    marginBottom: 30,
+    marginBottom: 25,
   },
 
   label: {
@@ -102,7 +135,30 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 
+  themeTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+
+  subtitle: {
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
+
+  themeLabel: {
+    fontSize: 15,
+  },
+
   buttonContainer: {
-    marginTop: 30,
+    marginTop: 35,
   },
 });
