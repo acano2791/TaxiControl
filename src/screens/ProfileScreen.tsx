@@ -4,10 +4,17 @@ import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import CustomButton from "../components/CustomButton";
 import { navigationRef } from "../navigation/NavigationService";
+import { useSelector } from "react-redux";
+import type { RootState } from "../store";
 
 export default function ProfileScreen() {
   // Obtiene la información y las funciones de autenticación.
   const { user, logout } = useAuth();
+  
+  // Redux: obtiene el usuario almacenado en el estado global.
+  const reduxUser = useSelector(
+  (state: RootState) => state.user
+  );
 
   // Obtiene la información y funciones del tema.
   const { isDark, colors, toggleTheme } = useTheme();
@@ -45,7 +52,7 @@ export default function ProfileScreen() {
       </Text>
 
       <Text style={[styles.value, { color: colors.textSecondary }]}>
-        {user?.email}
+        {reduxUser.email}
       </Text>
 
       <Text style={[styles.label, { color: colors.text }]}>
@@ -53,7 +60,7 @@ export default function ProfileScreen() {
       </Text>
 
       <Text style={[styles.value, { color: colors.textSecondary }]}>
-        {user?.role}
+        {reduxUser.role}
       </Text>
 
       {/* Icono representativo del tema actual. */}

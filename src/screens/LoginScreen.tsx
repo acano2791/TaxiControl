@@ -6,6 +6,9 @@ import CustomInput from "../components/CustomInput";
 import { RootStackParamList } from "../navigation/StackNavigator";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "../store";
+import { setUser } from "../store/slices/userSlice";
 
 // Tipado de las propiedades de navegación de la pantalla Login.
 type Props = NativeStackScreenProps<
@@ -27,13 +30,30 @@ export default function LoginScreen({ navigation }: Props) {
   // Obtiene los colores del tema actual.
   const { colors } = useTheme();
 
+  // Redux: permite actualizar el estado global del usuario.
+  const dispatch = useDispatch<AppDispatch>();
+
   // Función que se ejecuta al presionar el botón de iniciar sesión.
   const handleLogin = () => {
-    // Por ahora registramos al usuario como usuario.
-    login(email, "usuario");
+  // Por ahora registramos al usuario como usuario.
+  login(email, "usuario");
 
-    // Navegamos hacia las pestañas principales.
-    navigation.navigate("UserTabs");
+  // Redux: guarda los datos del usuario en el estado global.
+  dispatch(
+    setUser({
+      email,
+      role: "usuario",
+    })
+  );
+
+  // Muestra en consola el flujo de datos hacia Redux.
+  console.log("Usuario guardado en Redux:", {
+    email,
+    role: "usuario",
+  });
+
+  // Navegamos hacia las pestañas principales.
+  navigation.navigate("UserTabs");
   };
 
   return (
