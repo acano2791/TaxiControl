@@ -4,6 +4,8 @@ import { navigationRef } from "./src/navigation/NavigationService";
 import { AuthProvider } from "./src/contexts/AuthContext";
 import { ThemeProvider, useTheme } from "./src/contexts/ThemeContext";
 import { StatusBar } from "expo-status-bar";
+import { Provider } from "react-redux";
+import { store } from "./src/store";
 
 function AppNavigation() {
   const { isDark } = useTheme();
@@ -21,14 +23,18 @@ function AppNavigation() {
 
 export default function App() {
   return (
-    // ThemeProvider permite compartir el tema
+    // Provider permite compartir el estado global de Redux
     // con todas las pantallas de la aplicación.
-    <ThemeProvider>
-    {/* AuthProvider permite compartir la sesión del usuario
+    <Provider store={store}>
+      {/* ThemeProvider permite compartir el tema
           con todas las pantallas de la aplicación. */}
-    <AuthProvider>      
-      <AppNavigation />                 
-    </AuthProvider>
-    </ThemeProvider>
+      <ThemeProvider>
+        {/* AuthProvider permite compartir la sesión del usuario
+            con todas las pantallas de la aplicación. */}
+        <AuthProvider>
+          <AppNavigation />
+        </AuthProvider>
+      </ThemeProvider>
+    </Provider>
   );
 }
