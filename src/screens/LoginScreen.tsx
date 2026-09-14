@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View,} from "react-native";
+import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View, } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import CustomButton from "../components/CustomButton";
 import CustomInput from "../components/CustomInput";
 import { RootStackParamList } from "../navigation/StackNavigator";
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 
 // Tipado de las propiedades de navegación de la pantalla Login.
 type Props = NativeStackScreenProps<
@@ -23,6 +24,9 @@ export default function LoginScreen({ navigation }: Props) {
   // Obtiene la función login del contexto de autenticación.
   const { login } = useAuth();
 
+  // Obtiene los colores del tema actual.
+  const { colors } = useTheme();
+
   // Función que se ejecuta al presionar el botón de iniciar sesión.
   const handleLogin = () => {
     // Por ahora registramos al usuario como usuario.
@@ -35,7 +39,10 @@ export default function LoginScreen({ navigation }: Props) {
   return (
     // Ajusta la pantalla cuando aparece el teclado.
     <KeyboardAvoidingView
-      style={styles.keyboardContainer}
+      style={[
+        styles.keyboardContainer,
+        { backgroundColor: colors.background },
+      ]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       {/* Permite desplazar el contenido cuando el teclado ocupa espacio. */}
@@ -43,7 +50,12 @@ export default function LoginScreen({ navigation }: Props) {
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.container}>
+        <View
+          style={[
+            styles.container,
+            { backgroundColor: colors.background },
+          ]}
+        >
           {/* Logo local de TaxiControl. */}
           <Image
             source={require("../../assets/taxicontrol-logo.png")}
@@ -52,7 +64,7 @@ export default function LoginScreen({ navigation }: Props) {
           />
 
           {/* Texto descriptivo de la pantalla. */}
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
             Inicia sesión para continuar
           </Text>
 
@@ -79,7 +91,7 @@ export default function LoginScreen({ navigation }: Props) {
           />
 
           {/* Texto que indica que el usuario puede crear una cuenta. */}
-          <Text style={styles.registerText}>
+          <Text style={[styles.registerText, { color: colors.textSecondary }]}>
             ¿No tienes una cuenta?
           </Text>
 
@@ -100,7 +112,6 @@ const styles = StyleSheet.create({
   // Contenedor que se adapta a la aparición del teclado.
   keyboardContainer: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
   },
 
   // Permite desplazar verticalmente el contenido.
@@ -113,7 +124,6 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     padding: 24,
-    backgroundColor: "#FFFFFF",
   },
 
   // Tamaño y separación del logo.

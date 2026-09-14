@@ -4,6 +4,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import CustomButton from "../components/CustomButton";
 import CustomInput from "../components/CustomInput";
 import { RootStackParamList } from "../navigation/StackNavigator";
+import { useTheme } from "../contexts/ThemeContext";
 
 // Tipado de las propiedades de navegación de la pantalla de registro.
 type Props = NativeStackScreenProps<
@@ -28,6 +29,9 @@ export default function RegisterScreen({ navigation }: Props) {
   // Estado que indica si el usuario intentó enviar el formulario.
   const [submitted, setSubmitted] = useState(false);
 
+  // Obtiene los colores del tema actual.
+  const { colors } = useTheme();
+
   // Función que se ejecuta al presionar el botón de registro.
   const handleRegister = () => {
     // Indica que el usuario intentó enviar el formulario.
@@ -40,7 +44,6 @@ export default function RegisterScreen({ navigation }: Props) {
       password.trim() === "" ||
       phone.trim() === ""
     ) {
-      // Muestra un mensaje indicando que deben completarse los campos.
       Alert.alert(
         "Formulario incompleto",
         "Completa todos los campos para continuar."
@@ -111,7 +114,10 @@ export default function RegisterScreen({ navigation }: Props) {
   return (
     // Ajusta la pantalla cuando aparece el teclado.
     <KeyboardAvoidingView
-      style={styles.keyboardContainer}
+      style={[
+        styles.keyboardContainer,
+        { backgroundColor: colors.background },
+      ]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       {/* Permite desplazar el formulario cuando el teclado ocupa espacio. */}
@@ -119,12 +125,19 @@ export default function RegisterScreen({ navigation }: Props) {
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.container}>
+        <View
+          style={[
+            styles.container,
+            { backgroundColor: colors.background },
+          ]}
+        >
           {/* Título principal de la pantalla. */}
-          <Text style={styles.title}>Crear cuenta</Text>
+          <Text style={[styles.title, { color: colors.text }]}>
+            Crear cuenta
+          </Text>
 
           {/* Texto descriptivo del formulario. */}
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
             Completa tus datos para registrarte
           </Text>
 
@@ -180,7 +193,6 @@ const styles = StyleSheet.create({
   // Contenedor que se adapta a la aparición del teclado.
   keyboardContainer: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
   },
 
   // Permite desplazar verticalmente el contenido.
