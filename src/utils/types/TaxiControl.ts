@@ -7,3 +7,10 @@ export type User = {
   email: string;
   role: UserRole | null;
 };
+
+export type Product = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+};

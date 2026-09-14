@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 import CustomButton from "../components/CustomButton";
 import CustomInput from "../components/CustomInput";
 import { useTheme } from "../contexts/ThemeContext";
+import type { RootState, AppDispatch } from "../store";
+import { addProduct } from "../store/slices/productsSlice";
 
 // Pantalla para solicitar un taxi.
 export default function RequestTaxiScreen() {
@@ -14,6 +17,19 @@ export default function RequestTaxiScreen() {
 
   // Obtiene los colores del tema actual.
   const { colors } = useTheme();
+
+  // Redux: obtiene el inventario de servicios disponibles.
+  const inventory = useSelector(
+  (state: RootState) => state.products.inventory
+  );
+
+  // Redux: obtiene los servicios agregados por el usuario.
+  const addedProducts = useSelector(
+  (state: RootState) => state.products.addedProducts
+  );
+
+  // Redux: permite modificar el estado global.
+  const dispatch = useDispatch<AppDispatch>();
 
   // Función que se ejecuta al presionar el botón para solicitar taxi.
   const handleRequestTaxi = () => {
@@ -47,6 +63,26 @@ export default function RequestTaxiScreen() {
       >
         Ingresa tu destino para solicitar un taxi cercano
       </Text>
+      
+      {/* Inventario de servicios almacenado en Redux. */}
+      <View style={styles.servicesContainer}>
+      <Text style={[styles.servicesTitle, { color: colors.text }]}>
+      Servicios disponibles
+      </Text>
+
+        {inventory.map((product) => (
+       <CustomButton
+       key={product.id}
+        title={`${product.name} - L ${product.price}`}
+        onPress={() => {
+        dispatch(addProduct(product));
+
+        // Redux: registra en consola el producto agregado.
+        console.log("Producto agregado a Redux:", product);
+        }}
+        />
+        ))}
+      </View>
 
       {/* Campo reutilizable para ingresar el destino. */}
       <CustomInput
@@ -94,6 +130,39 @@ export default function RequestTaxiScreen() {
           </Text>
         </View>
       )}
+      {/* Productos agregados almacenados en Redux. */}
+      {addedProducts.length > 0 && (
+        <View
+          style={[
+            styles.statusContainer,
+            {
+              backgroundColor: colors.cardBackground,
+              borderColor: colors.cardBorder,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.statusTitle,
+              { color: colors.text },
+            ]}
+          >
+            Servicios agregados
+          </Text>
+
+      {addedProducts.map((product) => (
+          <Text
+            key={product.id}
+            style={[
+              styles.statusText,
+              { color: colors.textSecondary },
+            ]}
+          >
+            {product.name} - L {product.price}
+      </Text>
+    ))}
+      </View>
+    )}
     </View>
   );
 }
@@ -119,6 +188,18 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
 
+  servicesContainer: {
+    width: "100%",
+    marginBottom: 20,
+  },
+
+  servicesTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  
   statusContainer: {
     marginTop: 30,
     alignItems: "center",
