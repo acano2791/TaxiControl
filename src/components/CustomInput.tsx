@@ -1,13 +1,7 @@
-import {
-  KeyboardTypeOptions,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { KeyboardTypeOptions, StyleSheet, Text, TextInput, TouchableOpacity, View,} from "react-native";
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../contexts/ThemeContext";
 
 // Propiedades que puede recibir nuestro componente reutilizable.
 type CustomInputProps = {
@@ -28,6 +22,9 @@ export default function CustomInput({
 }: CustomInputProps) {
   // Estado local que controla si la contraseña se muestra u oculta.
   const [isSecureText, setIsSecureText] = useState(type === "password");
+
+  // Obtiene los colores del tema actual.
+  const { colors } = useTheme();
 
   // Determina si el campo corresponde a una contraseña.
   const isPasswordField = type === "password";
@@ -99,12 +96,23 @@ export default function CustomInput({
       <View
         style={[
           styles.inputContainer,
-          shouldShowError ? styles.errorBorder : null,
+          {
+            backgroundColor: colors.surface,
+            borderColor: shouldShowError
+              ? "#D32F2F"
+              : colors.border,
+          },
         ]}
       >
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              color: colors.text,
+            },
+          ]}
           placeholder={placeholder}
+          placeholderTextColor={colors.textSecondary}
           value={value}
           onChangeText={handleChangeText}
           keyboardType={keyboardType}
@@ -112,7 +120,7 @@ export default function CustomInput({
           maxLength={type === "phone" ? 8 : undefined}
         />
 
-        {/* El botón del ojo solamente aparece en campos de contraseña. */}
+        {/* El botón del ojo solamente aparece en campos de contraseñas. */}
         {isPasswordField && (
           <TouchableOpacity
             onPress={() => setIsSecureText(!isSecureText)}
@@ -120,6 +128,7 @@ export default function CustomInput({
             <Ionicons
               name={isSecureText ? "eye" : "eye-off"}
               size={22}
+              color={colors.textSecondary}
             />
           </TouchableOpacity>
         )}
@@ -145,8 +154,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#F4F6F8",
-    borderColor: "#9AA8B8",
     borderWidth: 1,
     borderRadius: 12,
     paddingLeft: 14,
@@ -157,13 +164,8 @@ const styles = StyleSheet.create({
 
   input: {
     flex: 1,
-    color: "#1A2B3D",
     fontSize: 15,
     paddingVertical: 10,
-  },
-
-  errorBorder: {
-    borderColor: "#D32F2F",
   },
 
   error: {
