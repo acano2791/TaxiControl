@@ -2,6 +2,7 @@ import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import CustomButton from "../components/CustomButton";
 import CustomInput from "../components/CustomInput";
+import { useTheme } from "../contexts/ThemeContext";
 
 // Pantalla para solicitar un taxi.
 export default function RequestTaxiScreen() {
@@ -10,6 +11,9 @@ export default function RequestTaxiScreen() {
 
   // Estado que indica si existe una solicitud activa.
   const [requestSent, setRequestSent] = useState(false);
+
+  // Obtiene los colores del tema actual.
+  const { colors } = useTheme();
 
   // Función que se ejecuta al presionar el botón para solicitar taxi.
   const handleRequestTaxi = () => {
@@ -23,12 +27,24 @@ export default function RequestTaxiScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.background },
+      ]}
+    >
       {/* Título de la pantalla para solicitar un taxi. */}
-      <Text style={styles.title}>Solicitar taxi</Text>
+      <Text style={[styles.title, { color: colors.text }]}>
+        Solicitar taxi
+      </Text>
 
       {/* Descripción de la función principal de esta pantalla. */}
-      <Text style={styles.subtitle}>
+      <Text
+        style={[
+          styles.subtitle,
+          { color: colors.textSecondary },
+        ]}
+      >
         Ingresa tu destino para solicitar un taxi cercano
       </Text>
 
@@ -48,12 +64,32 @@ export default function RequestTaxiScreen() {
 
       {/* Muestra el estado actual de la solicitud. */}
       {requestSent && (
-        <View style={styles.statusContainer}>
+        <View
+          style={[
+            styles.statusContainer,
+            {
+              backgroundColor: colors.cardBackground,
+              borderColor: colors.cardBorder,
+            },
+          ]}
+        >
           {/* Título del estado de la solicitud. */}
-          <Text style={styles.statusTitle}>Solicitud enviada</Text>
+          <Text
+            style={[
+              styles.statusTitle,
+              { color: colors.text },
+            ]}
+          >
+            Solicitud enviada
+          </Text>
 
           {/* Mensaje que simula la búsqueda de un conductor. */}
-          <Text style={styles.statusText}>
+          <Text
+            style={[
+              styles.statusText,
+              { color: colors.textSecondary },
+            ]}
+          >
             Buscando conductor cercano...
           </Text>
         </View>
@@ -86,6 +122,10 @@ const styles = StyleSheet.create({
   statusContainer: {
     marginTop: 30,
     alignItems: "center",
+    padding: 20,
+    borderWidth: 1,
+    borderRadius: 10,
+    width: "100%",
   },
 
   statusTitle: {
