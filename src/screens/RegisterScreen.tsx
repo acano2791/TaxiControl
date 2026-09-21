@@ -84,7 +84,7 @@ export default function RegisterScreen({ navigation }: Props) {
     // Muestra un mensaje cuando todos los datos son válidos.
         try {
       // Registra el usuario mediante Supabase Auth.
-      await register(email, password);
+      await register(email, password, name, phone);
 
       console.log("Usuario registrado en Supabase:", {
         email,
