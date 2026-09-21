@@ -65,7 +65,7 @@ export default function CustomInput({
     }
 
     // Valida que la contraseña tenga al menos 4 caracteres.
-    if (type === "password" && value.length < 4) {
+    if (type === "password" && value.length < 6) {
       return "La contraseña es débil";
     }
 

@@ -5,6 +5,7 @@ import CustomButton from "../components/CustomButton";
 import CustomInput from "../components/CustomInput";
 import { RootStackParamList } from "../navigation/StackNavigator";
 import { useTheme } from "../contexts/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
 
 // Tipado de las propiedades de navegación de la pantalla de registro.
 type Props = NativeStackScreenProps<
@@ -13,7 +14,9 @@ type Props = NativeStackScreenProps<
 >;
 
 // Pantalla de registro de TaxiControl.
-export default function RegisterScreen({ navigation }: Props) {
+export default function RegisterScreen({ navigation }: Props) {  
+  const { register } = useAuth();
+
   // Estado que almacena el nombre ingresado por el usuario.
   const [name, setName] = useState("");
 
@@ -33,7 +36,7 @@ export default function RegisterScreen({ navigation }: Props) {
   const { colors } = useTheme();
 
   // Función que se ejecuta al presionar el botón de registro.
-  const handleRegister = () => {
+  const handleRegister = async () => {
     // Indica que el usuario intentó enviar el formulario.
     setSubmitted(true);
 
@@ -61,10 +64,10 @@ export default function RegisterScreen({ navigation }: Props) {
     }
 
     // Valida que la contraseña tenga al menos 4 caracteres.
-    if (password.length < 4) {
+    if (password.length < 6) {
       Alert.alert(
         "Contraseña inválida",
-        "La contraseña debe tener al menos 4 caracteres."
+        "La contraseña debe tener al menos 6 caracteres."
       );
       return;
     }
@@ -79,36 +82,44 @@ export default function RegisterScreen({ navigation }: Props) {
     }
 
     // Muestra un mensaje cuando todos los datos son válidos.
-    Alert.alert(
-      "Registro exitoso",
-      "Los datos fueron validados correctamente.",
-      [
-        {
-          text: "OK",
-          onPress: () => {
-            // Limpia todos los campos del formulario.
-            setName("");
-            setEmail("");
-            setPassword("");
-            setPhone("");
+        try {
+      // Registra el usuario mediante Supabase Auth.
+      await register(email, password);
 
-            // Reinicia el estado de validación.
-            setSubmitted(false);
+      console.log("Usuario registrado en Supabase:", {
+        email,
+      });
 
-            // Regresa a la pantalla de Login.
-            navigation.navigate("LoginScreen");
+      Alert.alert(
+        "Registro exitoso",
+        "Tu cuenta fue creada correctamente.",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              // Limpia todos los campos del formulario.
+              setName("");
+              setEmail("");
+              setPassword("");
+              setPhone("");
+
+              // Reinicia el estado de validación.
+              setSubmitted(false);
+
+              // Regresa a la pantalla de Login.
+              navigation.navigate("LoginScreen");
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    } catch (error: any) {
+      console.log("Error al registrar usuario:", error);
 
-    // Mostramos los datos en la consola para fines de demostración.
-    console.log("Datos de registro:", {
-      name,
-      email,
-      password,
-      phone,
-    });
+      Alert.alert(
+        "Error de registro",
+        error?.message ?? "No fue posible crear la cuenta."
+      );
+    }
   };
 
   return (

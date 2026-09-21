@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View, } from "react-native";
+import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View, Alert } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import CustomButton from "../components/CustomButton";
 import CustomInput from "../components/CustomInput";
@@ -34,27 +34,36 @@ export default function LoginScreen({ navigation }: Props) {
   const dispatch = useDispatch<AppDispatch>();
 
   // Función que se ejecuta al presionar el botón de iniciar sesión.
-  const handleLogin = () => {
-  // Por ahora registramos al usuario como usuario.
-  login(email, "usuario");
+  const handleLogin = async () => {
+  try {
+    // Inicia sesión mediante Supabase Auth.
+    await login(email, password, "usuario");
 
-  // Redux: guarda los datos del usuario en el estado global.
-  dispatch(
-    setUser({
+    // Redux: guarda los datos del usuario en el estado global.
+    dispatch(
+      setUser({
+        email,
+        role: "usuario",
+      })
+    );
+
+    // Muestra en consola el flujo de datos hacia Redux.
+    console.log("Usuario guardado en Redux:", {
       email,
       role: "usuario",
-    })
+    });
+
+    // Navegamos hacia las pestañas principales.
+    navigation.navigate("UserTabs");
+  } catch (error: any) {
+  console.log("Error al iniciar sesión:", error);
+
+  Alert.alert(
+    "Error al iniciar sesión",
+    "El correo o la contraseña son incorrectos."
   );
-
-  // Muestra en consola el flujo de datos hacia Redux.
-  console.log("Usuario guardado en Redux:", {
-    email,
-    role: "usuario",
-  });
-
-  // Navegamos hacia las pestañas principales.
-  navigation.navigate("UserTabs");
-  };
+}
+};
 
   return (
     // Ajusta la pantalla cuando aparece el teclado.
