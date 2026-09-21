@@ -4,17 +4,27 @@ import { supabase } from "../lib/supabase";
 // Roles que podrá tener un usuario dentro de TaxiControl.
 export type UserRole = "usuario" | "conductor" | "administrador";
 
-// Información básica del usuario que mantiene la sesión.
+// Información del usuario que mantiene la sesión.
 type User = {
   email: string;
+  name: string;
+  phone: string;
   role: UserRole;
 } | null;
 
 // Funciones y datos que estarán disponibles mediante el contexto.
 type AuthContextType = {
   user: User;
-  register: (email: string, password: string, name: string, phone: string) => Promise<void>;
-  login: (email: string, password: string, role: UserRole) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    name: string,
+    phone: string
+  ) => Promise<void>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<NonNullable<User>>;
   logout: () => Promise<void>;
 };
 
@@ -43,7 +53,12 @@ export const AuthProvider = ({
 
   // Función que registra un usuario utilizando Supabase Auth
   // y crea su perfil en la tabla profiles.
-  const register = async (email: string, password: string, name: string, phone: string ) => {
+  const register = async (
+    email: string,
+    password: string,
+    name: string,
+    phone: string
+  ) => {
     // Crea la cuenta de autenticación en Supabase.
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -76,6 +91,8 @@ export const AuthProvider = ({
     // Actualiza el usuario dentro del contexto de autenticación.
     setUser({
       email: data.user.email ?? email,
+      name,
+      phone,
       role: "usuario",
     });
   };
@@ -83,9 +100,8 @@ export const AuthProvider = ({
   // Inicia sesión utilizando Supabase Auth.
   const login = async (
     email: string,
-    password: string,
-    role: UserRole
-  ) => {
+    password: string
+  ): Promise<NonNullable<User>> => {
     const { data, error } =
       await supabase.auth.signInWithPassword({
         email,
@@ -96,12 +112,32 @@ export const AuthProvider = ({
       throw error;
     }
 
-    if (data.user) {
-      setUser({
-        email: data.user.email ?? email,
-        role,
-      });
+    if (!data.user) {
+      throw new Error("No se pudo obtener el usuario.");
     }
+
+    // Obtiene el perfil completo del usuario desde Supabase.
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("email, name, phone, role")
+      .eq("id", data.user.id)
+      .single();
+
+    if (profileError) {
+      throw profileError;
+    }
+
+    // Actualiza el usuario dentro del contexto.
+    const authenticatedUser: NonNullable<User> = {
+      email: profile.email ?? data.user.email ?? email,
+      name: profile.name ?? "",
+      phone: profile.phone ?? "",
+      role: profile.role as UserRole,
+    };
+
+    setUser(authenticatedUser);
+
+    return authenticatedUser;
   };
 
   // Cierra la sesión utilizando Supabase Auth.

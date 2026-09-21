@@ -36,21 +36,23 @@ export default function LoginScreen({ navigation }: Props) {
   // Función que se ejecuta al presionar el botón de iniciar sesión.
   const handleLogin = async () => {
   try {
-    // Inicia sesión mediante Supabase Auth.
-    await login(email, password, "usuario");
+     // Inicia sesión mediante Supabase Auth y obtiene el perfil del usuario.
+    const authenticatedUser = await login(email, password);
 
-    // Redux: guarda los datos del usuario en el estado global.
+    // Redux: guarda los datos reales del usuario obtenidos desde Supabase.
     dispatch(
       setUser({
-        email,
-        role: "usuario",
+        email: authenticatedUser.email,
+        name: authenticatedUser.name,
+        phone: authenticatedUser.phone,
+        role: authenticatedUser.role,
       })
     );
 
     // Muestra en consola el flujo de datos hacia Redux.
     console.log("Usuario guardado en Redux:", {
-      email,
-      role: "usuario",
+      email: authenticatedUser.email,
+      role: authenticatedUser.role,
     });
 
     // Navegamos hacia las pestañas principales.

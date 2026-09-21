@@ -5,6 +5,8 @@ export type UserRole =
 
 export type User = {
   email: string;
+  name: string;
+  phone: string;
   role: UserRole | null;
 };
 

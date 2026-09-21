@@ -48,11 +48,27 @@ export default function ProfileScreen() {
 
       {/* Información del usuario. */}
       <Text style={[styles.label, { color: colors.text }]}>
+        Nombre:
+      </Text>
+
+      <Text style={[styles.value, { color: colors.textSecondary }]}>
+        {reduxUser.name}
+      </Text>
+
+      <Text style={[styles.label, { color: colors.text }]}>
         Correo electrónico:
       </Text>
 
       <Text style={[styles.value, { color: colors.textSecondary }]}>
         {reduxUser.email}
+      </Text>
+
+      <Text style={[styles.label, { color: colors.text }]}>
+        Teléfono:
+      </Text>
+
+      <Text style={[styles.value, { color: colors.textSecondary }]}>
+        {reduxUser.phone}
       </Text>
 
       <Text style={[styles.label, { color: colors.text }]}>
