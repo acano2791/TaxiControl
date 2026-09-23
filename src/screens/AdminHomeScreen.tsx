@@ -146,6 +146,42 @@ export default function AdminHomeScreen() {
     loadDrivers();
   }, []);
 
+  const handleAssignDriver = async (
+  requestId: string,
+  driverId: string
+) => {
+  const { error } = await supabase
+    .from("taxi_requests")
+    .update({
+      driver_id: driverId,
+      status: "asignado",
+      assigned_at: new Date().toISOString(),
+    })
+    .eq("id", requestId)
+    .eq("status", "pendiente");
+
+  if (error) {
+    console.error(
+      "Error al asignar conductor:",
+      error
+    );
+
+    Alert.alert(
+      "Error",
+      "No se pudo asignar el conductor."
+    );
+
+    return;
+  }
+
+  Alert.alert(
+    "Solicitud asignada",
+    "El conductor fue asignado correctamente."
+  );
+
+  await loadRequests();
+  };
+
   // Cierra la sesión del administrador.
   const handleLogout = async () => {
     await logout();
@@ -236,6 +272,39 @@ export default function AdminHomeScreen() {
               >
                 Estado: {request.status}
               </Text>
+
+              {drivers.length > 0 && (
+  <View style={styles.assignContainer}>
+    <Text
+      style={[
+        styles.assignTitle,
+        { color: colors.text },
+      ]}
+    >
+      Asignar conductor:
+    </Text>
+
+    {drivers.map((driver) => (
+      <View
+        key={driver.id}
+        style={styles.assignButtonContainer}
+      >
+        <CustomButton
+          title={`Asignar a ${
+            driver.profile?.name ?? "Conductor"
+          }`}
+          onPress={() =>
+            handleAssignDriver(
+              request.id,
+              driver.id
+            )
+          }
+        />
+      </View>
+    ))}
+  </View>
+)}
+
             </View>
           ))
         )}
@@ -472,4 +541,19 @@ const styles = StyleSheet.create({
   alignSelf: "center",
   marginBottom: 15,
   },
+
+  assignContainer: {
+  marginTop: 15,
+},
+
+assignTitle: {
+  fontSize: 16,
+  fontWeight: "bold",
+  marginBottom: 10,
+},
+
+assignButtonContainer: {
+  marginBottom: 10,
+},
+
 });
