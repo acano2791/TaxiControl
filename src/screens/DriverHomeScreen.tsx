@@ -1,11 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  Alert,
-} from "react-native";
+import { StyleSheet, Text, View, Image, Alert,} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -19,6 +13,7 @@ export default function DriverHomeScreen() {
 
   const [photoPath, setPhotoPath] = useState<string | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [assignedRequests, setAssignedRequests] = useState<any[]>([]);
 
   const loadDriverPhoto = async () => {
     if (!user) {
@@ -62,10 +57,51 @@ export default function DriverHomeScreen() {
 
     setPhotoUrl(signedUrlData.signedUrl);
   };
+  
+  const loadAssignedRequests = async () => {
+  if (!user) {
+    return;
+  }
+
+  const { data: driverData, error: driverError } =
+    await supabase
+      .from("drivers")
+      .select("id")
+      .eq("profile_id", user.id)
+      .single();
+
+  if (driverError) {
+    console.error(
+      "Error al cargar los datos del conductor:",
+      driverError
+    );
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("taxi_requests")
+    .select(
+      "id, pickup_location, destination, status, requested_at, assigned_at"
+    )
+    .eq("driver_id", driverData.id)
+    .eq("status", "asignado")
+    .order("assigned_at", { ascending: false });
+
+  if (error) {
+    console.error(
+      "Error al cargar viajes asignados:",
+      error
+    );
+    return;
+  }
+
+  setAssignedRequests(data ?? []);
+  };
 
   useEffect(() => {
-    loadDriverPhoto();
-  }, [user]);
+  loadDriverPhoto();
+  loadAssignedRequests();
+}, [user]);
 
   const handleSelectPhoto = async () => {
     if (!user) {
@@ -271,6 +307,68 @@ export default function DriverHomeScreen() {
         )}
       </View>
 
+      <View style={styles.requestsContainer}>
+  <Text
+    style={[
+      styles.sectionTitle,
+      { color: colors.text },
+    ]}
+  >
+    Viajes asignados
+  </Text>
+
+  {assignedRequests.length === 0 ? (
+    <Text
+      style={[
+        styles.emptyText,
+        { color: colors.textSecondary },
+      ]}
+    >
+      No tienes viajes asignados.
+    </Text>
+  ) : (
+    assignedRequests.map((request) => (
+      <View
+        key={request.id}
+        style={[
+          styles.requestCard,
+          {
+            backgroundColor: colors.cardBackground,
+            borderColor: colors.cardBorder,
+          },
+        ]}
+      >
+        <Text
+          style={[
+            styles.requestText,
+            { color: colors.text },
+          ]}
+        >
+          Origen: {request.pickup_location}
+        </Text>
+
+        <Text
+          style={[
+            styles.requestText,
+            { color: colors.text },
+          ]}
+        >
+          Destino: {request.destination}
+        </Text>
+
+        <Text
+          style={[
+            styles.requestText,
+            { color: colors.text },
+          ]}
+        >
+          Estado: {request.status}
+        </Text>
+      </View>
+    ))
+  )}
+</View>
+
       <View style={styles.buttonContainer}>
         <CustomButton
           title="Cerrar sesión"
@@ -326,4 +424,35 @@ const styles = StyleSheet.create({
   buttonContainer: {
     marginTop: 35,
   },
+
+  requestsContainer: {
+  width: "100%",
+  marginTop: 30,
+},
+
+sectionTitle: {
+  fontSize: 20,
+  fontWeight: "bold",
+  marginBottom: 15,
+  textAlign: "center",
+},
+
+emptyText: {
+  textAlign: "center",
+  fontSize: 15,
+},
+
+requestCard: {
+  width: "100%",
+  padding: 16,
+  borderWidth: 1,
+  borderRadius: 10,
+  marginBottom: 12,
+},
+
+requestText: {
+  fontSize: 15,
+  marginBottom: 6,
+},
+
 });
