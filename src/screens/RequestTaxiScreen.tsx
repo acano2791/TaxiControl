@@ -99,7 +99,13 @@ export default function RequestTaxiScreen() {
   if (!requestId) return;
 
   loadRequestStatus();
-  }, [requestId]);
+
+  const interval = setInterval(() => {
+    loadRequestStatus();
+  }, 5000);
+
+  return () => clearInterval(interval);
+}, [requestId]);
 
   return (
     <View
