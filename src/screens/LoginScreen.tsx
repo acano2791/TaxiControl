@@ -55,8 +55,23 @@ export default function LoginScreen({ navigation }: Props) {
       role: authenticatedUser.role,
     });
 
-    // Navegamos hacia las pestañas principales.
-    navigation.navigate("UserTabs");
+    // Navegamos según el rol del usuario.
+  if (authenticatedUser.role === "usuario") {
+  navigation.reset({
+    index: 0,
+    routes: [{ name: "UserTabs" }],
+  });
+    } else if (authenticatedUser.role === "conductor") {
+  navigation.reset({
+    index: 0,
+    routes: [{ name: "DriverHome" }],
+  });
+    } else if (authenticatedUser.role === "administrador") {
+  navigation.reset({
+    index: 0,
+    routes: [{ name: "AdminHome" }],
+  });
+}
   } catch (error: any) {
   console.log("Error al iniciar sesión:", error);
 
