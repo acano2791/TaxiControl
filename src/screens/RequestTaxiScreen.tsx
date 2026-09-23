@@ -6,9 +6,13 @@ import CustomInput from "../components/CustomInput";
 import { useTheme } from "../contexts/ThemeContext";
 import type { RootState, AppDispatch } from "../store";
 import { addProduct } from "../store/slices/productsSlice";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../contexts/AuthContext";
 
 // Pantalla para solicitar un taxi.
 export default function RequestTaxiScreen() {
+  const { user } = useAuth();
+  
   // Estado que almacena la dirección de destino ingresada por el usuario.
   const [destination, setDestination] = useState("");
 
@@ -32,15 +36,36 @@ export default function RequestTaxiScreen() {
   const dispatch = useDispatch<AppDispatch>();
 
   // Función que se ejecuta al presionar el botón para solicitar taxi.
-  const handleRequestTaxi = () => {
-    // Cambia el estado para indicar que la solicitud fue enviada.
-    setRequestSent(true);
+  const handleRequestTaxi = async () => {
+  if (!user) {
+    console.log("No hay usuario autenticado.");
+    return;
+  }
 
-    // Muestra los datos de la solicitud en la consola.
-    console.log("Solicitud de taxi:", {
-      destination,
-    });
-  };
+  if (!destination.trim()) {
+    console.log("El usuario debe ingresar un destino.");
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("taxi_requests")
+    .insert({
+      user_id: user.id,
+      pickup_location: "Ubicación actual",
+      destination: destination.trim(),
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error al crear solicitud:", error);
+    return;
+  }
+
+  console.log("Solicitud creada correctamente:", data);
+
+  setRequestSent(true);
+};
 
   return (
     <View

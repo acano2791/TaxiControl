@@ -6,6 +6,7 @@ export type UserRole = "usuario" | "conductor" | "administrador";
 
 // Información del usuario que mantiene la sesión.
 type User = {
+  id: string;
   email: string;
   name: string;
   phone: string;
@@ -90,6 +91,7 @@ export const AuthProvider = ({
 
     // Actualiza el usuario dentro del contexto de autenticación.
     setUser({
+      id: data.user.id,
       email: data.user.email ?? email,
       name,
       phone,
@@ -129,6 +131,7 @@ export const AuthProvider = ({
 
     // Actualiza el usuario dentro del contexto.
     const authenticatedUser: NonNullable<User> = {
+      id: data.user.id,
       email: profile.email ?? data.user.email ?? email,
       name: profile.name ?? "",
       phone: profile.phone ?? "",
