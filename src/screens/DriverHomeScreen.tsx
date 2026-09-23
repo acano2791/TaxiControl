@@ -1,15 +1,24 @@
-import { StyleSheet, Text, View, Image, Alert } from "react-native";
+import { StyleSheet, Text, View, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import CustomButton from "../components/CustomButton";
 import { navigationRef } from "../navigation/NavigationService";
+import { supabase } from "../lib/supabase";
 
 export default function DriverHomeScreen() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const { colors } = useTheme();
 
   const handleSelectPhoto = async () => {
+    if (!user) {
+      Alert.alert(
+        "Error",
+        "No se encontró el usuario autenticado."
+      );
+      return;
+    }
+
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -34,12 +43,83 @@ export default function DriverHomeScreen() {
 
     const selectedImage = result.assets[0];
 
-    console.log("FOTO SELECCIONADA:", selectedImage.uri);
-
-    Alert.alert(
-      "Foto seleccionada",
-      "La imagen fue seleccionada correctamente."
+    console.log(
+      "FOTO SELECCIONADA:",
+      selectedImage.uri
     );
+
+    try {
+      const response = await fetch(selectedImage.uri);
+
+      const arrayBuffer = await response.arrayBuffer();
+
+      const filePath = `${user.id}/profile.jpg`;
+
+      const { error: uploadError } =
+        await supabase.storage
+          .from("driver-photos")
+          .upload(filePath, arrayBuffer, {
+            contentType:
+              selectedImage.mimeType ?? "image/jpeg",
+            upsert: false,
+          });
+
+      if (uploadError) {
+        console.error(
+          "Error al subir la foto:",
+          uploadError
+        );
+
+        Alert.alert(
+          "Error",
+          "No se pudo subir la foto."
+        );
+
+        return;
+      }
+
+      console.log(
+        "FOTO SUBIDA CORRECTAMENTE:",
+        filePath
+      );
+
+      const { error: updateError } =
+        await supabase
+          .from("drivers")
+          .update({
+            photo_driver_url: filePath,
+          })
+          .eq("profile_id", user.id);
+
+      if (updateError) {
+        console.error(
+          "Error al guardar la ruta de la foto:",
+          updateError
+        );
+
+        Alert.alert(
+          "Error",
+          "La foto se subió, pero no se pudo guardar la información del conductor."
+        );
+
+        return;
+      }
+
+      Alert.alert(
+        "Foto guardada",
+        "Tu foto de conductor se guardó correctamente."
+      );
+    } catch (error) {
+      console.error(
+        "Error inesperado al subir la foto:",
+        error
+      );
+
+      Alert.alert(
+        "Error",
+        "Ocurrió un error al subir la foto."
+      );
+    }
   };
 
   const handleLogout = async () => {
@@ -60,7 +140,12 @@ export default function DriverHomeScreen() {
         { backgroundColor: colors.background },
       ]}
     >
-      <Text style={[styles.title, { color: colors.text }]}>
+      <Text
+        style={[
+          styles.title,
+          { color: colors.text },
+        ]}
+      >
         Panel del Conductor
       </Text>
 
