@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View, Alert } from "react-native";
+import { StyleSheet, Text, View, Alert, Image, } from "react-native";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import CustomButton from "../components/CustomButton";
@@ -39,15 +39,19 @@ export default function AdminHomeScreen() {
 
   // Carga los conductores disponibles.
   const loadDrivers = async () => {
-  const { data: driversData, error: driversError } = await supabase
-    .from("drivers")
-    .select(
-      "id, profile_id, license_number, license_type, license_expire, vehicle_marca, vehicle_model, vehicle_color, vehicle_plate, photo_driver_url, is_available"
-    )
-    .eq("is_available", true);
+  const { data: driversData, error: driversError } =
+    await supabase
+      .from("drivers")
+      .select(
+        "id, profile_id, license_number, license_type, license_expire, vehicle_marca, vehicle_model, vehicle_color, vehicle_plate, photo_driver_url, is_available"
+      )
+      .eq("is_available", true);
 
   if (driversError) {
-    console.error("Error al cargar conductores:", driversError);
+    console.error(
+      "Error al cargar conductores:",
+      driversError
+    );
 
     Alert.alert(
       "Error",
@@ -66,16 +70,17 @@ export default function AdminHomeScreen() {
     return;
   }
 
-  const { data: profilesData, error: profilesError } = await supabase
-    .from("profiles")
-    .select("id, name, email, phone")
-    .in("id", profileIds);
-
-    console.log("PERFILES:", JSON.stringify(profilesData, null, 2));
-console.log("ERROR PERFILES:", profilesError);
+  const { data: profilesData, error: profilesError } =
+    await supabase
+      .from("profiles")
+      .select("id, name, email, phone")
+      .in("id", profileIds);
 
   if (profilesError) {
-    console.error("Error al cargar perfiles:", profilesError);
+    console.error(
+      "Error al cargar perfiles:",
+      profilesError
+    );
 
     Alert.alert(
       "Error",
@@ -85,22 +90,51 @@ console.log("ERROR PERFILES:", profilesError);
     return;
   }
 
-  const driversWithProfiles = (driversData ?? []).map(
-    (driver) => {
+  const driversWithProfiles = await Promise.all(
+    (driversData ?? []).map(async (driver) => {
       const profile = (profilesData ?? []).find(
-        (profile) => profile.id === driver.profile_id
+        (profile) =>
+          profile.id === driver.profile_id
       );
+
+      let photoUrl = null;
+
+      if (driver.photo_driver_url) {
+        const {
+          data: signedUrlData,
+          error: signedUrlError,
+        } = await supabase.storage
+          .from("driver-photos")
+          .createSignedUrl(
+            driver.photo_driver_url,
+            3600
+          );
+
+        if (signedUrlError) {
+          console.error(
+            "Error al generar URL de foto:",
+            signedUrlError
+          );
+        } else {
+          photoUrl = signedUrlData.signedUrl;
+        }
+      }
 
       return {
         ...driver,
         profile,
+        photoUrl,
       };
-    }
+    })
   );
 
   console.log(
     "CONDUCTORES COMPLETOS:",
-    JSON.stringify(driversWithProfiles, null, 2)
+    JSON.stringify(
+      driversWithProfiles,
+      null,
+      2
+    )
   );
 
   setDrivers(driversWithProfiles);
@@ -230,15 +264,22 @@ console.log("ERROR PERFILES:", profilesError);
         ) : (
           drivers.map((driver) => (
   <View
-    key={driver.id}
-    style={[
-      styles.requestCard,
-      {
-        backgroundColor: colors.cardBackground,
-        borderColor: colors.cardBorder,
-      },
-    ]}
-  >
+  key={driver.id}
+  style={[
+    styles.requestCard,
+    {
+      backgroundColor: colors.cardBackground,
+      borderColor: colors.cardBorder,
+    },
+  ]}
+>
+  {driver.photoUrl ? (
+    <Image
+      source={{ uri: driver.photoUrl }}
+      style={styles.driverPhoto}
+    />
+  ) : null}
+
     <Text
       style={[
         styles.requestText,
@@ -422,5 +463,13 @@ const styles = StyleSheet.create({
 
   buttonContainer: {
     marginTop: 35,
+  },
+
+  driverPhoto: {
+  width: 120,
+  height: 120,
+  borderRadius: 60,
+  alignSelf: "center",
+  marginBottom: 15,
   },
 });
