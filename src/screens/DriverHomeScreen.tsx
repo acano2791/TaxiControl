@@ -1,4 +1,11 @@
-import { StyleSheet, Text, View, Alert } from "react-native";
+import { useEffect, useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  Alert,
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -10,11 +17,69 @@ export default function DriverHomeScreen() {
   const { user, logout } = useAuth();
   const { colors } = useTheme();
 
+  const [photoPath, setPhotoPath] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+
+  const loadDriverPhoto = async () => {
+    if (!user) {
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("drivers")
+      .select("photo_driver_url")
+      .eq("profile_id", user.id)
+      .single();
+
+    if (error) {
+      console.error(
+        "Error al cargar la foto del conductor:",
+        error
+      );
+      return;
+    }
+
+    if (!data?.photo_driver_url) {
+      setPhotoPath(null);
+      setPhotoUrl(null);
+      return;
+    }
+
+    setPhotoPath(data.photo_driver_url);
+
+    const { data: signedUrlData, error: signedUrlError } =
+      await supabase.storage
+        .from("driver-photos")
+        .createSignedUrl(data.photo_driver_url, 3600);
+
+    if (signedUrlError) {
+      console.error(
+        "Error al generar URL de la foto:",
+        signedUrlError
+      );
+      return;
+    }
+
+    setPhotoUrl(signedUrlData.signedUrl);
+  };
+
+  useEffect(() => {
+    loadDriverPhoto();
+  }, [user]);
+
   const handleSelectPhoto = async () => {
     if (!user) {
       Alert.alert(
         "Error",
         "No se encontró el usuario autenticado."
+      );
+      return;
+    }
+
+    if (photoPath) {
+      Alert.alert(
+        "Foto ya registrada",
+        "La foto del conductor ya fue registrada y no puede cambiarse."
       );
       return;
     }
@@ -50,7 +115,6 @@ export default function DriverHomeScreen() {
 
     try {
       const response = await fetch(selectedImage.uri);
-
       const arrayBuffer = await response.arrayBuffer();
 
       const filePath = `${user.id}/profile.jpg`;
@@ -103,6 +167,21 @@ export default function DriverHomeScreen() {
         );
 
         return;
+      }
+
+      const { data: signedUrlData, error: signedUrlError } =
+        await supabase.storage
+          .from("driver-photos")
+          .createSignedUrl(filePath, 3600);
+
+      if (signedUrlError) {
+        console.error(
+          "Error al generar URL de la foto:",
+          signedUrlError
+        );
+      } else {
+        setPhotoPath(filePath);
+        setPhotoUrl(signedUrlData.signedUrl);
       }
 
       Alert.alert(
@@ -168,10 +247,28 @@ export default function DriverHomeScreen() {
           Foto del conductor
         </Text>
 
-        <CustomButton
-          title="Seleccionar foto"
-          onPress={handleSelectPhoto}
-        />
+        {photoUrl ? (
+          <>
+            <Image
+              source={{ uri: photoUrl }}
+              style={styles.driverPhoto}
+            />
+
+            <Text
+              style={[
+                styles.photoRegisteredText,
+                { color: colors.textSecondary },
+              ]}
+            >
+              Foto registrada
+            </Text>
+          </>
+        ) : (
+          <CustomButton
+            title="Seleccionar foto"
+            onPress={handleSelectPhoto}
+          />
+        )}
       </View>
 
       <View style={styles.buttonContainer}>
@@ -213,6 +310,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 15,
+  },
+
+  driverPhoto: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    marginBottom: 12,
+  },
+
+  photoRegisteredText: {
+    fontSize: 14,
   },
 
   buttonContainer: {
