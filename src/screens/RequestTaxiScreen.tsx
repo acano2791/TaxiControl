@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import CustomButton from "../components/CustomButton";
@@ -15,6 +15,13 @@ export default function RequestTaxiScreen() {
   
   // Estado que almacena la dirección de destino ingresada por el usuario.
   const [destination, setDestination] = useState("");
+  const [requestedDestination, setRequestedDestination] = useState("");
+
+  // Estado que almacena el ID de la solicitud activa.
+  const [requestId, setRequestId] = useState<string | null>(null);
+
+  //
+  const [requestStatus, setRequestStatus] = useState<string | null>(null);
 
   // Estado que indica si existe una solicitud activa.
   const [requestSent, setRequestSent] = useState(false);
@@ -64,8 +71,35 @@ export default function RequestTaxiScreen() {
 
   console.log("Solicitud creada correctamente:", data);
 
+  setRequestId(data.id);
+  setRequestedDestination(destination.trim());
   setRequestSent(true);
-};
+  setDestination("");
+  };
+
+  const loadRequestStatus = async () => {
+  if (!requestId) return;
+
+  const { data, error } = await supabase
+    .from("taxi_requests")
+    .select("status")
+    .eq("id", requestId)
+    .single();
+
+  if (error) {
+    console.error("Error al consultar el estado:", error);
+    return;
+  }
+
+  console.log("Estado actual de la solicitud:", data.status);
+  setRequestStatus(data.status);
+  };
+
+  useEffect(() => {
+  if (!requestId) return;
+
+  loadRequestStatus();
+  }, [requestId]);
 
   return (
     <View
@@ -144,14 +178,24 @@ export default function RequestTaxiScreen() {
             Solicitud enviada
           </Text>
 
-          {/* Mensaje que simula la búsqueda de un conductor. */}
+          {/* Mensaje que muestra el estado de la solicitud. */}
           <Text
             style={[
               styles.statusText,
               { color: colors.textSecondary },
             ]}
           >
-            Buscando conductor cercano...
+            Destino: {requestedDestination}
+          </Text>
+    
+          {/* Mensaje que muestra el estado de la solicitud. */}
+          <Text
+            style={[
+              styles.statusText,
+              { color: colors.textSecondary },
+            ]}
+            >
+            Estado: {requestStatus ?? "pendiente"}
           </Text>
         </View>
       )}
