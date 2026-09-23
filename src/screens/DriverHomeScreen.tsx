@@ -84,7 +84,7 @@ export default function DriverHomeScreen() {
       "id, pickup_location, destination, status, requested_at, assigned_at"
     )
     .eq("driver_id", driverData.id)
-    .eq("status", "asignado")
+    .in("status", ["asignado", "en_curso"])
     .order("assigned_at", { ascending: false });
 
   if (error) {
@@ -98,6 +98,45 @@ export default function DriverHomeScreen() {
   setAssignedRequests(data ?? []);
   };
 
+  const handleStartTrip = async (requestId: string) => {
+  const { error } = await supabase
+    .from("taxi_requests")
+    .update({
+      status: "en_curso",
+    })
+    .eq("id", requestId)
+    .eq("status", "asignado");
+
+  if (error) {
+    console.error("Error al iniciar el viaje:", error);
+    Alert.alert("Error", "No se pudo iniciar el viaje.");
+    return;
+  }
+
+  Alert.alert("Viaje iniciado", "El viaje está ahora en curso.");
+  await loadAssignedRequests();
+};
+
+  const handleCompleteTrip = async (requestId: string) => {
+  const { error } = await supabase
+    .from("taxi_requests")
+    .update({
+      status: "completado",
+      completed_at: new Date().toISOString(),
+    })
+    .eq("id", requestId)
+    .eq("status", "en_curso");
+
+  if (error) {
+    console.error("Error al completar el viaje:", error);
+    Alert.alert("Error", "No se pudo completar el viaje.");
+    return;
+  }
+
+  Alert.alert("Viaje completado", "El viaje se completó correctamente.");
+  await loadAssignedRequests();
+  };
+  
   useEffect(() => {
   loadDriverPhoto();
   loadAssignedRequests();
@@ -364,6 +403,23 @@ export default function DriverHomeScreen() {
         >
           Estado: {request.status}
         </Text>
+
+        {request.status === "asignado" && (
+  <View style={styles.tripButtonContainer}>
+    <CustomButton
+      title="Iniciar viaje"
+      onPress={() => handleStartTrip(request.id)}
+    />
+  </View>
+)}
+      {request.status === "en_curso" && (
+  <View style={styles.tripButtonContainer}>
+    <CustomButton
+      title="Completar viaje"
+      onPress={() => handleCompleteTrip(request.id)}
+    />
+  </View>
+)}
       </View>
     ))
   )}
@@ -453,6 +509,10 @@ requestCard: {
 requestText: {
   fontSize: 15,
   marginBottom: 6,
+},
+
+tripButtonContainer: {
+  marginTop: 10,
 },
 
 });
