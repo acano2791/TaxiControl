@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View, Alert, Image, } from "react-native";
+import { StyleSheet, Text, View, Alert, Image, ScrollView } from "react-native";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import CustomButton from "../components/CustomButton";
@@ -195,11 +195,12 @@ export default function AdminHomeScreen() {
   };
 
   return (
-    <View
-      style={[
+    <ScrollView
+      contentContainerStyle={[
         styles.container,
         { backgroundColor: colors.background },
       ]}
+      showsVerticalScrollIndicator={false}
     >
       <Text style={[styles.title, { color: colors.text }]}>
         Panel del Administrador
@@ -468,16 +469,15 @@ export default function AdminHomeScreen() {
           onPress={handleLogout}
         />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: "center",
-    justifyContent: "center",
     padding: 24,
+    paddingBottom: 40,
   },
 
   title: {

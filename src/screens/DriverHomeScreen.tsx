@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View, Image, Alert,} from "react-native";
+import { StyleSheet, Text, View, Image, Alert,ScrollView,} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -103,6 +103,7 @@ export default function DriverHomeScreen() {
     .from("taxi_requests")
     .update({
       status: "en_curso",
+      started_at: new Date().toISOString(),
     })
     .eq("id", requestId)
     .eq("status", "asignado");
@@ -288,11 +289,12 @@ export default function DriverHomeScreen() {
   };
 
   return (
-    <View
-      style={[
+    <ScrollView
+      contentContainerStyle={[
         styles.container,
         { backgroundColor: colors.background },
       ]}
+      showsVerticalScrollIndicator={false}
     >
       <Text
         style={[
@@ -432,16 +434,15 @@ export default function DriverHomeScreen() {
           onPress={handleLogout}
         />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: "center",
-    justifyContent: "center",
     padding: 24,
+    paddingBottom: 40,
   },
 
   title: {

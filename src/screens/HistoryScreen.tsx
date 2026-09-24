@@ -1,39 +1,75 @@
 import { StyleSheet, Text, View, FlatList } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../contexts/AuthContext"
 
 // Tipo de dato que representa un viaje.
 type Trip = {
   id: string;
   destination: string;
   status: string;
+  started_at: string | null;
+  completed_at: string | null;  
 };
-
-// Datos locales de ejemplo para mostrar el historial.
-const trips: Trip[] = [
-  {
-    id: "1",
-    destination: "Mall Multiplaza",
-    status: "Completado",
-  },
-  {
-    id: "2",
-    destination: "Centro de la ciudad",
-    status: "Completado",
-  },
-  {
-    id: "3",
-    destination: "Universidad",
-    status: "Completado",
-  },
-];
 
 // Pantalla que muestra el historial de viajes.
 export default function HistoryScreen() {
   // Obtiene los colores del tema actual.
   const { colors } = useTheme();
+  const { user } = useAuth();
+  const [trips, setTrips] = useState<Trip[]>([]);
 
+  // Componente para para extraer viajes de SubaBase
+  const loadTrips = async () => {
+  if (!user) {
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("taxi_requests")
+    .select("id, destination, status, started_at, completed_at")
+    .eq("user_id", user.id)
+    .eq("status", "completado")
+    .order("completed_at", { ascending: false });
+
+  if (error) {
+    console.error("Error al cargar el historial:", error);
+    return;
+  }
+
+  setTrips(data ?? []);
+  };
+
+  const calculateDuration = (
+  startedAt: string | null,
+  completedAt: string | null
+) => {
+  if (!startedAt || !completedAt) {
+    return "No disponible";
+  }
+
+  const start = new Date(startedAt).getTime();
+  const end = new Date(completedAt).getTime();
+
+  const durationMinutes = Math.round(
+    (end - start) / (1000 * 60)
+  );
+
+  if (durationMinutes < 1) {
+    return "Menos de 1 minuto";
+  }
+
+  return `${durationMinutes} min`;
+};
+
+  useEffect(() => {
+      loadTrips();
+      }, [user]);
+  
   // Componente que representa cada viaje del historial.
-  const renderTrip = ({ item }: { item: Trip }) => (
+  const renderTrip = ({ item, index,}: {item: Trip; index: number;}) => (
+    
     <View
       style={[
         styles.tripCard,
@@ -50,7 +86,7 @@ export default function HistoryScreen() {
           { color: colors.text },
         ]}
       >
-        Viaje {item.id}
+        🚕 Viaje {index + 1}
       </Text>
 
       {/* Destino del viaje. */}
@@ -60,7 +96,47 @@ export default function HistoryScreen() {
           { color: colors.textSecondary },
         ]}
       >
-        Destino: {item.destination}
+       📍 Destino: {item.destination}
+      </Text>
+      
+      <Text
+        style={[
+          styles.status,
+          { color: colors.textSecondary },
+        ]}
+      >
+        🕐 Inicio:{" "}
+        {item.started_at
+          ? new Date(item.started_at).toLocaleTimeString([], {
+             hour: "2-digit",
+             minute: "2-digit",
+            })
+          : "No disponible"}
+      </Text>
+
+      <Text
+        style={[
+         styles.status,
+         { color: colors.textSecondary },
+       ]}
+      >
+        🏁 Fin:{" "}
+        {item.completed_at
+         ? new Date(item.completed_at).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "No disponible"}
+      </Text>
+
+      <Text
+        style={[
+         styles.status,
+         { color: colors.textSecondary },
+       ]}
+      >
+        ⏱️ Duración:{" "}
+        {calculateDuration(item.started_at, item.completed_at)}
       </Text>
 
       {/* Estado actual del viaje. */}
