@@ -428,12 +428,21 @@ export default function DriverHomeScreen() {
 </View>
 
       <View style={styles.buttonContainer}>
-        <CustomButton
-          title="Cerrar sesión"
-          variant="secondary"
-          onPress={handleLogout}
-        />
-      </View>
+  <CustomButton
+    title="👤 Mi perfil"
+    onPress={() => {
+      if (navigationRef.isReady()) {
+        navigationRef.navigate("ProfileScreen");
+      }
+    }}
+  />
+
+  <CustomButton
+    title="Cerrar sesión"
+    variant="secondary"
+    onPress={handleLogout}
+  />
+</View>
     </ScrollView>
   );
 }

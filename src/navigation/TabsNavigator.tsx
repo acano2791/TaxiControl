@@ -4,6 +4,7 @@ import RequestTaxiScreen from "../screens/RequestTaxiScreen";
 import HistoryScreen from "../screens/HistoryScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import { useTheme } from "../contexts/ThemeContext";
+import { Ionicons } from "@expo/vector-icons";
 
 // Tipado de las pantallas que pertenecen a las pestañas.
 export type TabsParamList = {
@@ -40,28 +41,36 @@ export default function TabsNavigator() {
       <Tab.Screen
         name="HomeTab"
         component={HomeScreen}
-        options={{ title: "Inicio" }}
+        options={{ title: "Inicio",tabBarIcon: ({ color, size }) => (
+          <Ionicons name="home-outline" size={size} color={color} />
+        ), }}
       />
 
       {/* Pestaña para solicitar un taxi cercano. */}
       <Tab.Screen
         name="RequestTaxiTab"
         component={RequestTaxiScreen}
-        options={{ title: "Solicitar" }}
+        options={{ title: "Solicitar",tabBarIcon: ({ color, size }) => (
+          <Ionicons name="car-outline" size={size} color={color} />
+        ), }}
       />
 
       {/* Pestaña donde se mostrará el historial de viajes. */}
       <Tab.Screen
         name="HistoryTab"
         component={HistoryScreen}
-        options={{ title: "Historial" }}
+        options={{ title: "Historial",tabBarIcon: ({ color, size }) => (
+          <Ionicons name="time-outline" size={size} color={color} />
+        ), }}
       />
 
       {/* Pestaña donde se mostrará la información del usuario. */}
       <Tab.Screen
         name="ProfileTab"
         component={ProfileScreen}
-        options={{ title: "Perfil" }}
+        options={{ title: "Perfil",tabBarIcon: ({ color, size }) => (
+          <Ionicons name="person-outline" size={size} color={color} />
+        ), }}
       />
     </Tab.Navigator>
   );

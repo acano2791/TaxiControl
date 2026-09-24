@@ -6,6 +6,7 @@ import RegisterScreen from "../screens/RegisterScreen";
 import { useTheme } from "../contexts/ThemeContext";
 import DriverHomeScreen from "../screens/DriverHomeScreen";
 import AdminHomeScreen from "../screens/AdminHomeScreen";
+import ProfileScreen from "../screens/ProfileScreen";
 
 // Tipado de las pantallas que pertenecen al Stack Navigator.
 export type RootStackParamList = {
@@ -15,6 +16,7 @@ export type RootStackParamList = {
   RegisterScreen: undefined;
   DriverHome: undefined;
   AdminHome: undefined;
+  ProfileScreen: undefined;
 };
 
 // Creación del Stack Navigator utilizando el tipado anterior.
@@ -77,6 +79,13 @@ export default function StackNavigator() {
         name="AdminHome"
         component={AdminHomeScreen}
         options={{ title: "Panel del Administrador"}}
+      />
+
+      {/* Pantalla para perfil del usuario. */}  
+      <Stack.Screen
+        name="ProfileScreen"
+        component={ProfileScreen}
+        options={{ title: "Mi perfil" }}
       />
     </Stack.Navigator>
   );

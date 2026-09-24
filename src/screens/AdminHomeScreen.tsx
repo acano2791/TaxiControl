@@ -461,8 +461,16 @@ export default function AdminHomeScreen() {
         )}
       </View>
 
-      {/* Botón de cerrar sesión */}
+      {/* Botón de  perfil y cerrar sesión */}
       <View style={styles.buttonContainer}>
+        <CustomButton
+    title="👤 Mi perfil"
+    onPress={() => {
+      if (navigationRef.isReady()) {
+        navigationRef.navigate("ProfileScreen");
+      }
+    }}
+  />
         <CustomButton
           title="Cerrar sesión"
           variant="secondary"
