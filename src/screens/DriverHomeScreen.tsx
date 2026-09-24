@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View, Image, Alert,ScrollView,} from "react-native";
+import { StyleSheet, Text, View, Image, Alert,ScrollView,Switch,} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -14,6 +14,7 @@ export default function DriverHomeScreen() {
   const [photoPath, setPhotoPath] = useState<string | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [assignedRequests, setAssignedRequests] = useState<any[]>([]);
+  const [isAvailable, setIsAvailable] = useState(false);
 
   const loadDriverPhoto = async () => {
     if (!user) {
@@ -58,6 +59,57 @@ export default function DriverHomeScreen() {
     setPhotoUrl(signedUrlData.signedUrl);
   };
   
+  const loadDriverAvailability = async () => {
+  if (!user) {
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("drivers")
+    .select("is_available")
+    .eq("profile_id", user.id)
+    .single();
+
+  if (error) {
+    console.error(
+      "Error al cargar la disponibilidad del conductor:",
+      error
+    );
+    return;
+  }
+
+  setIsAvailable(data?.is_available ?? false);
+};
+
+  const handleAvailabilityChange = async (value: boolean) => {
+  if (!user) {
+    return;
+  }
+
+  const { error } = await supabase
+    .from("drivers")
+    .update({
+      is_available: value,
+    })
+    .eq("profile_id", user.id);
+
+  if (error) {
+    console.error(
+      "Error al actualizar la disponibilidad del conductor:",
+      error
+    );
+
+    Alert.alert(
+      "Error",
+      "No se pudo actualizar tu disponibilidad."
+    );
+
+    return;
+  }
+
+  setIsAvailable(value);
+};
+
   const loadAssignedRequests = async () => {
   if (!user) {
     return;
@@ -141,6 +193,7 @@ export default function DriverHomeScreen() {
   useEffect(() => {
   loadDriverPhoto();
   loadAssignedRequests();
+  loadDriverAvailability();
 }, [user]);
 
   const handleSelectPhoto = async () => {
@@ -314,6 +367,29 @@ export default function DriverHomeScreen() {
         Bienvenido a TaxiControl
       </Text>
 
+      <View style={styles.availabilityContainer}>
+  <Text
+    style={[
+      styles.availabilityTitle,
+      { color: colors.text },
+    ]}
+  >
+    {isAvailable
+      ? "🟢 Conductor disponible"
+      : "🔴 Conductor no disponible"}
+  </Text>
+
+  <Switch
+    value={isAvailable}
+    onValueChange={handleAvailabilityChange}
+    thumbColor={isAvailable ? colors.primary : "#f4f3f4"}
+    trackColor={{
+      false: "#ccc",
+      true: colors.primary,
+    }}
+  />
+</View>
+
       <View style={styles.photoContainer}>
         <Text
           style={[
@@ -462,6 +538,21 @@ const styles = StyleSheet.create({
 
   subtitle: {
     fontSize: 16,
+  },
+
+  availabilityContainer: {
+  width: "100%",
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginTop: 20,
+  padding: 15,
+  borderRadius: 10,
+  },
+
+  availabilityTitle: {
+  fontSize: 16,
+  fontWeight: "bold",
   },
 
   photoContainer: {

@@ -7,6 +7,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import DriverHomeScreen from "../screens/DriverHomeScreen";
 import AdminHomeScreen from "../screens/AdminHomeScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import AdminDashboardScreen from "../screens/AdminDashboardScreen";
 
 // Tipado de las pantallas que pertenecen al Stack Navigator.
 export type RootStackParamList = {
@@ -17,6 +18,7 @@ export type RootStackParamList = {
   DriverHome: undefined;
   AdminHome: undefined;
   ProfileScreen: undefined;
+  AdminDashboard: undefined;
 };
 
 // Creación del Stack Navigator utilizando el tipado anterior.
@@ -79,6 +81,13 @@ export default function StackNavigator() {
         name="AdminHome"
         component={AdminHomeScreen}
         options={{ title: "Panel del Administrador"}}
+      />
+
+      {/* Pantalla dashboards para el Administrador */}  
+      <Stack.Screen
+        name="AdminDashboard"
+        component={AdminDashboardScreen}
+        options={{ title: "Panel del administrador" }}
       />
 
       {/* Pantalla para perfil del usuario. */}  

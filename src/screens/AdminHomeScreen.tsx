@@ -39,106 +39,106 @@ export default function AdminHomeScreen() {
 
   // Carga los conductores disponibles.
   const loadDrivers = async () => {
-  const { data: driversData, error: driversError } =
-    await supabase
-      .from("drivers")
-      .select(
-        "id, profile_id, license_number, license_type, license_expire, vehicle_marca, vehicle_model, vehicle_color, vehicle_plate, photo_driver_url, is_available"
-      )
-      .eq("is_available", true);
+    const { data: driversData, error: driversError } =
+      await supabase
+        .from("drivers")
+        .select(
+          "id, profile_id, license_number, license_type, license_expire, vehicle_marca, vehicle_model, vehicle_color, vehicle_plate, photo_driver_url, is_available"
+        )
+        .eq("is_available", true);
 
-  if (driversError) {
-    console.error(
-      "Error al cargar conductores:",
-      driversError
-    );
-
-    Alert.alert(
-      "Error",
-      "No se pudieron cargar los conductores disponibles."
-    );
-
-    return;
-  }
-
-  const profileIds = (driversData ?? []).map(
-    (driver) => driver.profile_id
-  );
-
-  if (profileIds.length === 0) {
-    setDrivers([]);
-    return;
-  }
-
-  const { data: profilesData, error: profilesError } =
-    await supabase
-      .from("profiles")
-      .select("id, name, email, phone")
-      .in("id", profileIds);
-
-  if (profilesError) {
-    console.error(
-      "Error al cargar perfiles:",
-      profilesError
-    );
-
-    Alert.alert(
-      "Error",
-      "No se pudo cargar la información de los conductores."
-    );
-
-    return;
-  }
-
-  const driversWithProfiles = await Promise.all(
-    (driversData ?? []).map(async (driver) => {
-      const profile = (profilesData ?? []).find(
-        (profile) =>
-          profile.id === driver.profile_id
+    if (driversError) {
+      console.error(
+        "Error al cargar conductores:",
+        driversError
       );
 
-      let photoUrl = null;
+      Alert.alert(
+        "Error",
+        "No se pudieron cargar los conductores disponibles."
+      );
 
-      if (driver.photo_driver_url) {
-        const {
-          data: signedUrlData,
-          error: signedUrlError,
-        } = await supabase.storage
-          .from("driver-photos")
-          .createSignedUrl(
-            driver.photo_driver_url,
-            3600
-          );
+      return;
+    }
 
-        if (signedUrlError) {
-          console.error(
-            "Error al generar URL de foto:",
-            signedUrlError
-          );
-        } else {
-          photoUrl = signedUrlData.signedUrl;
+    const profileIds = (driversData ?? []).map(
+      (driver) => driver.profile_id
+    );
+
+    if (profileIds.length === 0) {
+      setDrivers([]);
+      return;
+    }
+
+    const { data: profilesData, error: profilesError } =
+      await supabase
+        .from("profiles")
+        .select("id, name, email, phone")
+        .in("id", profileIds);
+
+    if (profilesError) {
+      console.error(
+        "Error al cargar perfiles:",
+        profilesError
+      );
+
+      Alert.alert(
+        "Error",
+        "No se pudo cargar la información de los conductores."
+      );
+
+      return;
+    }
+
+    const driversWithProfiles = await Promise.all(
+      (driversData ?? []).map(async (driver) => {
+        const profile = (profilesData ?? []).find(
+          (profile) =>
+            profile.id === driver.profile_id
+        );
+
+        let photoUrl = null;
+
+        if (driver.photo_driver_url) {
+          const {
+            data: signedUrlData,
+            error: signedUrlError,
+          } = await supabase.storage
+            .from("driver-photos")
+            .createSignedUrl(
+              driver.photo_driver_url,
+              3600
+            );
+
+          if (signedUrlError) {
+            console.error(
+              "Error al generar URL de foto:",
+              signedUrlError
+            );
+          } else {
+            photoUrl = signedUrlData.signedUrl;
+          }
         }
-      }
 
-      return {
-        ...driver,
-        profile,
-        photoUrl,
-      };
-    })
-  );
+        return {
+          ...driver,
+          profile,
+          photoUrl,
+        };
+      })
+    );
 
-  console.log(
-    "CONDUCTORES COMPLETOS:",
-    JSON.stringify(
-      driversWithProfiles,
-      null,
-      2
-    )
-  );
+    console.log(
+      "CONDUCTORES COMPLETOS:",
+      JSON.stringify(
+        driversWithProfiles,
+        null,
+        2
+      )
+    );
 
-  setDrivers(driversWithProfiles);
-};
+    setDrivers(driversWithProfiles);
+  };
 
   // Carga las solicitudes y conductores al abrir el panel.
   useEffect(() => {
@@ -147,39 +147,39 @@ export default function AdminHomeScreen() {
   }, []);
 
   const handleAssignDriver = async (
-  requestId: string,
-  driverId: string
-) => {
-  const { error } = await supabase
-    .from("taxi_requests")
-    .update({
-      driver_id: driverId,
-      status: "asignado",
-      assigned_at: new Date().toISOString(),
-    })
-    .eq("id", requestId)
-    .eq("status", "pendiente");
+    requestId: string,
+    driverId: string
+  ) => {
+    const { error } = await supabase
+      .from("taxi_requests")
+      .update({
+        driver_id: driverId,
+        status: "asignado",
+        assigned_at: new Date().toISOString(),
+      })
+      .eq("id", requestId)
+      .eq("status", "pendiente");
 
-  if (error) {
-    console.error(
-      "Error al asignar conductor:",
-      error
-    );
+    if (error) {
+      console.error(
+        "Error al asignar conductor:",
+        error
+      );
+
+      Alert.alert(
+        "Error",
+        "No se pudo asignar el conductor."
+      );
+
+      return;
+    }
 
     Alert.alert(
-      "Error",
-      "No se pudo asignar el conductor."
+      "Solicitud asignada",
+      "El conductor fue asignado correctamente."
     );
 
-    return;
-  }
-
-  Alert.alert(
-    "Solicitud asignada",
-    "El conductor fue asignado correctamente."
-  );
-
-  await loadRequests();
+    await loadRequests();
   };
 
   // Cierra la sesión del administrador.
@@ -275,37 +275,36 @@ export default function AdminHomeScreen() {
               </Text>
 
               {drivers.length > 0 && (
-  <View style={styles.assignContainer}>
-    <Text
-      style={[
-        styles.assignTitle,
-        { color: colors.text },
-      ]}
-    >
-      Asignar conductor:
-    </Text>
+                <View style={styles.assignContainer}>
+                  <Text
+                    style={[
+                      styles.assignTitle,
+                      { color: colors.text },
+                    ]}
+                  >
+                    Asignar conductor:
+                  </Text>
 
-    {drivers.map((driver) => (
-      <View
-        key={driver.id}
-        style={styles.assignButtonContainer}
-      >
-        <CustomButton
-          title={`Asignar a ${
-            driver.profile?.name ?? "Conductor"
-          }`}
-          onPress={() =>
-            handleAssignDriver(
-              request.id,
-              driver.id
-            )
-          }
-        />
-      </View>
-    ))}
-  </View>
-)}
-
+                  {drivers.map((driver) => (
+                    <View
+                      key={driver.id}
+                      style={styles.assignButtonContainer}
+                    >
+                      <CustomButton
+                        title={`Asignar a ${
+                          driver.profile?.name ?? "Conductor"
+                        }`}
+                        onPress={() =>
+                          handleAssignDriver(
+                            request.id,
+                            driver.id
+                          )
+                        }
+                      />
+                    </View>
+                  ))}
+                </View>
+              )}
             </View>
           ))
         )}
@@ -333,144 +332,153 @@ export default function AdminHomeScreen() {
           </Text>
         ) : (
           drivers.map((driver) => (
-  <View
-  key={driver.id}
-  style={[
-    styles.requestCard,
-    {
-      backgroundColor: colors.cardBackground,
-      borderColor: colors.cardBorder,
-    },
-  ]}
->
-  {driver.photoUrl ? (
-    <Image
-      source={{ uri: driver.photoUrl }}
-      style={styles.driverPhoto}
-    />
-  ) : null}
+            <View
+              key={driver.id}
+              style={[
+                styles.requestCard,
+                {
+                  backgroundColor: colors.cardBackground,
+                  borderColor: colors.cardBorder,
+                },
+              ]}
+            >
+              {driver.photoUrl ? (
+                <Image
+                  source={{ uri: driver.photoUrl }}
+                  style={styles.driverPhoto}
+                />
+              ) : null}
 
-    <Text
-      style={[
-        styles.requestText,
-        { color: colors.text },
-      ]}
-    >
-      Nombre: {driver.profile?.name}
-    </Text>
+              <Text
+                style={[
+                  styles.requestText,
+                  { color: colors.text },
+                ]}
+              >
+                Nombre: {driver.profile?.name}
+              </Text>
 
-    <Text
-      style={[
-        styles.requestText,
-        { color: colors.text },
-      ]}
-    >
-      Correo: {driver.profile?.email}
-    </Text>
+              <Text
+                style={[
+                  styles.requestText,
+                  { color: colors.text },
+                ]}
+              >
+                Correo: {driver.profile?.email}
+              </Text>
 
-    <Text
-      style={[
-        styles.requestText,
-        { color: colors.text },
-      ]}
-    >
-      Teléfono: {driver.profile?.phone}
-    </Text>
+              <Text
+                style={[
+                  styles.requestText,
+                  { color: colors.text },
+                ]}
+              >
+                Teléfono: {driver.profile?.phone}
+              </Text>
 
-    <Text
-      style={[
-        styles.requestText,
-        { color: colors.text },
-      ]}
-    >
-      Número de licencia: {driver.license_number}
-    </Text>
+              <Text
+                style={[
+                  styles.requestText,
+                  { color: colors.text },
+                ]}
+              >
+                Número de licencia: {driver.license_number}
+              </Text>
 
-    <Text
-      style={[
-        styles.requestText,
-        { color: colors.text },
-      ]}
-    >
-      Tipo de licencia: {driver.license_type}
-    </Text>
+              <Text
+                style={[
+                  styles.requestText,
+                  { color: colors.text },
+                ]}
+              >
+                Tipo de licencia: {driver.license_type}
+              </Text>
 
-    <Text
-      style={[
-        styles.requestText,
-        { color: colors.text },
-      ]}
-    >
-      Vencimiento de licencia: {driver.license_expire}
-    </Text>
+              <Text
+                style={[
+                  styles.requestText,
+                  { color: colors.text },
+                ]}
+              >
+                Vencimiento de licencia: {driver.license_expire}
+              </Text>
 
-    <Text
-      style={[
-        styles.requestText,
-        { color: colors.text },
-      ]}
-    >
-      Vehículo: {driver.vehicle_marca}{" "}
-      {driver.vehicle_model}
-    </Text>
+              <Text
+                style={[
+                  styles.requestText,
+                  { color: colors.text },
+                ]}
+              >
+                Vehículo: {driver.vehicle_marca}{" "}
+                {driver.vehicle_model}
+              </Text>
 
-    <Text
-      style={[
-        styles.requestText,
-        { color: colors.text },
-      ]}
-    >
-      Color: {driver.vehicle_color}
-    </Text>
+              <Text
+                style={[
+                  styles.requestText,
+                  { color: colors.text },
+                ]}
+              >
+                Color: {driver.vehicle_color}
+              </Text>
 
-    <Text
-      style={[
-        styles.requestText,
-        { color: colors.text },
-      ]}
-    >
-      Placa: {driver.vehicle_plate}
-    </Text>
+              <Text
+                style={[
+                  styles.requestText,
+                  { color: colors.text },
+                ]}
+              >
+                Placa: {driver.vehicle_plate}
+              </Text>
 
-    <Text
-      style={[
-        styles.requestText,
-        { color: colors.text },
-      ]}
-    >
-      Disponibilidad:{" "}
-      {driver.is_available
-        ? "Disponible"
-        : "No disponible"}
-    </Text>
+              <Text
+                style={[
+                  styles.requestText,
+                  { color: colors.text },
+                ]}
+              >
+                Disponibilidad:{" "}
+                {driver.is_available
+                  ? "Disponible"
+                  : "No disponible"}
+              </Text>
 
-    <Text
-      style={[
-        styles.requestText,
-        { color: colors.text },
-      ]}
-    >
-      Foto:{" "}
-      {driver.photo_driver_url
-        ? "Registrada"
-        : "No registrada"}
-    </Text>
-  </View>
-))
-          
+              <Text
+                style={[
+                  styles.requestText,
+                  { color: colors.text },
+                ]}
+              >
+                Foto:{" "}
+                {driver.photo_driver_url
+                  ? "Registrada"
+                  : "No registrada"}
+              </Text>
+            </View>
+          ))
         )}
       </View>
 
-      {/* Botón de  perfil y cerrar sesión */}
+      {/* Botones del administrador */}
       <View style={styles.buttonContainer}>
         <CustomButton
-    title="👤 Mi perfil"
-    onPress={() => {
-      if (navigationRef.isReady()) {
-        navigationRef.navigate("ProfileScreen");
-      }
-    }}
-  />
+          title="📊 Panel de administración"
+          onPress={() => {
+            if (navigationRef.isReady()) {
+              navigationRef.navigate("AdminDashboard");
+            }
+          }}
+        />
+
+        <CustomButton
+          title="👤 Mi perfil"
+          onPress={() => {
+            if (navigationRef.isReady()) {
+              navigationRef.navigate("ProfileScreen");
+            }
+          }}
+        />
+
         <CustomButton
           title="Cerrar sesión"
           variant="secondary"
@@ -543,25 +551,24 @@ const styles = StyleSheet.create({
   },
 
   driverPhoto: {
-  width: 120,
-  height: 120,
-  borderRadius: 60,
-  alignSelf: "center",
-  marginBottom: 15,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    alignSelf: "center",
+    marginBottom: 15,
   },
 
   assignContainer: {
-  marginTop: 15,
-},
+    marginTop: 15,
+  },
 
-assignTitle: {
-  fontSize: 16,
-  fontWeight: "bold",
-  marginBottom: 10,
-},
+  assignTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
 
-assignButtonContainer: {
-  marginBottom: 10,
-},
-
+  assignButtonContainer: {
+    marginBottom: 10,
+  },
 });
